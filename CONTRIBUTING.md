@@ -21,8 +21,8 @@ Contribution areas this project explicitly wants, not just tolerates:
   resumability, the review-gate mechanics, shared prompt/storyboard
   workflows (see the [Workflow share](.github/ISSUE_TEMPLATE/workflow_share.md)
   template)
-- **UI/UX improvements** — the Gradio interface, the storyboard review
-  table, Media Remix
+- **UI/UX improvements** — the editor (`studio/web`: vanilla JS modules,
+  no build step), the storyboard review, the Remix timeline
 - **Documentation** — install guides, architecture explanations, fixing
   something that confused you
 - **Examples** — see [`docs/good-first-issues.md`](docs/good-first-issues.md)

@@ -43,4 +43,4 @@ when filing a real issue — it's guidance, not part of the template):
   `docs/HARDWARE.md`)
 - Improve the installation guide (`docs/INSTALL.md`)
 - Add or improve a translation (`README_CN.md`, or a new language)
-- Small UI improvement (labels, layout, error messages in `app.py`)
+- Small UI improvement (labels, layout, error messages in `studio/web`)

@@ -12,7 +12,7 @@
 | **这是什么** | 一个开源流水线，把一句文字提示词变成一部完整剪辑、配音、带字幕的视频——剧本 → 分镜 → 角色/场景一致性设定 → 关键帧 → 视频片段 → 配音 → 字幕 → 最终视频。 |
 | **为什么做这个** | 由一名开发者在 6GB 显存的笔记本显卡上独立开发，没有 GPU 集群、也没有无限的 AI 预算——所以这套流水线必须能在普通硬件上真正跑起来，而不只是一个数据中心里的演示。 |
 | **有什么不一样** | 本地优先（剧本/分镜/一致性设定/关键帧/视频全部在你自己的机器上运行）、模型提供方可通过配置切换而非改代码、按场景做检查点支持断点续跑、并且在任何 GPU 生成开始前设有强制的人工审核环节——具体内容见下方 [功能特性](#功能特性)。 |
-| **怎么试用** | `git clone` → `pip install -r requirements.txt` → `python app.py`。完整步骤见 [快速开始](#快速开始)。 |
+| **怎么试用** | `git clone` → `pip install -r requirements.txt` → `python -m server`。完整步骤见 [快速开始](#快速开始)。 |
 
 *有一点需要提前说明：默认的配音方案目前会用到一个云端服务（Edge
 TTS）——不会藏着不提，见下文
@@ -151,13 +151,17 @@ git clone <repository-url>
 cd OpenVideoStudio/studio
 pip install -r requirements.txt
 cp .env.example .env    # 设置 COMFYUI_ROOT
-python app.py
+python -m server        # 打开 http://127.0.0.1:7870
 ```
 
-目标是在已下载好所需模型的前提下，10 分钟内完成配置。启动后会打开一个
-本地 Gradio 界面，包含两个标签页：**AI Creation**（上面的提示词到视频
-流水线）和 **Media Remix**（把你自己的照片/视频素材库剪辑成成片，共用
-同一套 FFmpeg / 音频 / 评分核心逻辑）。
+目标是在已下载好所需模型的前提下，10 分钟内完成配置。启动后会打开
+OpenVideoStudio 编辑器（单屏本地网页应用），包含两个工作区：**Create**
+（上面的提示词到视频流水线；需要生成时会根据 `COMFYUI_ROOT` 自动启动
+ComfyUI，Ollama 需要已在运行）和 **Remix**（把你自己的照片/视频素材库
+剪辑成成片：自动方案、监视器、时间线、素材库、风格、标题、转场、随节拍
+剪辑、项目保存、后台渲染，共用同一套 FFmpeg / 音频 / 评分核心逻辑）。
+Windows 上可直接运行 `Avvia_OpenVideoStudio.bat` 启动，
+`Ferma_OpenVideoStudio.bat` 停止。
 
 不需要 GPU 即可验证安装是否正确：
 

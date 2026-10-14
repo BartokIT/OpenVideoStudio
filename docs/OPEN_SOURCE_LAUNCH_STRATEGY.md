@@ -211,7 +211,7 @@ on the first screen.
 | 10 | Slow response | First-week SLA above, tracked explicitly |
 | 11 | Monolithic architecture (hard to contribute to) | `providers/base.py`'s interface separation and `docs/COMMUNITY_TRACKS.md`'s explicit boundaries are the mitigation — new provider = one file + one registry line |
 | 12 | Overclaiming | Every hardware/capability claim traced to `docs/HARDWARE.md` or actual shipped code; roadmap items explicitly labeled ROADMAP/HELP WANTED/RESEARCH, never presented as done |
-| 13 | Bad UI | `app.py`'s Gradio UI is functional but not a design showcase — set expectations accordingly in the README, don't lead with UI screenshots as the hook |
+| 13 | Bad UI | Mitigated (2026-10-13): the Gradio UI was replaced by a dedicated single-screen editor (Create + Remix); screenshots of it can now support the README, the pipeline stays the hook |
 | 14 | Unclear differentiation ("just another AI video tool") | Lead with the full pipeline breadth + local-first + provider-agnostic combination — few tools do all three together |
 | 15 | Privacy leak | `docs/OPEN_SOURCE_SECURITY_AUDIT.md`, plus a final re-scan at T-3 days per `docs/LAUNCH_72H_PLAN.md` |
 | 16 | Secret leak | Same audit; no `.env` file ever committed, verified via `.gitignore` and the final scan |

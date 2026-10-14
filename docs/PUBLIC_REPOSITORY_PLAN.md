@@ -26,7 +26,8 @@ included/excluded/fixed.
 ```
 OpenVideoStudio/
 ├── studio/
-│   ├── app.py                  # Gradio UI (AI Creation + Media Remix tabs)
+│   ├── server/                 # editor API (FastAPI, `python -m server`)
+│   ├── web/                    # editor front-end (Create + Remix workspaces)
 │   ├── config.toml             # provider/output/pipeline configuration
 │   ├── .env.example            # env var template (no real values)
 │   ├── core/                   # shared FFmpeg/audio/scoring — used by

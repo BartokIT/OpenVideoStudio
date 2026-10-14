@@ -32,7 +32,22 @@ Prompt
 Orchestration lives in `creative/pipeline.py` (the AI Creation pipeline)
 and `core/pipeline.py` (Media Remix, a separate personal-media tool
 sharing the same render/audio/scoring core — see below). Both are driven
-from the Gradio UI in `app.py`.
+from the editor:
+
+```
+studio/web (single-page app, no build step)
+   ↕ JSON API + background jobs
+studio/server (FastAPI, 127.0.0.1:7870, `python -m server`)
+   ↓
+core/create_service.py   (Create: storyboard review, generation, ComfyUI on demand)
+core/studio_service.py   (Remix: plan edits, timeline, frames, renders, projects, music)
+   ↓
+creative/pipeline.py · core/pipeline.py · core/pro/ (render engine)
+```
+
+The services hold all the behaviour as plain functions; the server only
+exposes them (long operations run as jobs whose progress the page polls)
+and serves files from the runs folder and the music library only.
 
 ### Components
 
@@ -50,7 +65,7 @@ from the Gradio UI in `app.py`.
   above, each a standalone module operating on a shared storyboard `dict`
   that accumulates fields as it passes through each stage.
 - **Review gate** — the pipeline stops after storyboard generation and
-  waits for human approval (editable in the Gradio table) before any
+  waits for human approval (editable scene cards in the editor) before any
   GPU generation starts. This is a deliberate safety/cost checkpoint, not
   a missing automation.
 - **Checkpointing** — each scene's keyframe/clip is written to the run

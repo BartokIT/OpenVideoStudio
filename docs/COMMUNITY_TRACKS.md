@@ -148,7 +148,7 @@ entry in the `PROVIDERS` dict).
   non-local providers entirely.
 
 **Advanced / research:**
-- `[Model Gateway] Model Manager UI` — a Gradio panel for
+- `[Model Gateway] Model Manager UI` — an editor panel for
   discovering/selecting/testing configured providers.
 - `[Model Gateway] Provider plugin SDK` — install a provider from a
   separate package without editing `registry.py` at all.
@@ -240,24 +240,24 @@ Linux and macOS support is real, scoped work, not a checkbox.
 
 ## TRACK F — Timeline / Editor
 
-**Vision:** today, "editing" is entirely automated (`creative/pipeline.py`'s
-final FFmpeg assembly). Pro Mode's vision includes a real timeline: scene
-reorder, trimming, transitions, a subtitle editor, and scene-level
-regeneration surfaced in a UI instead of only through the resumability
-model already present in `CreativeRunState`.
+**Status:** the editor's Remix workspace has a real timeline (shot
+reorder by drag, durations by dragging an edge, per-cut transitions, text
+cards, music track with beats). The Create workspace has scene editing
+with targeted regeneration (an edited scene is the only one generated
+again) but no timeline yet: its final edit is still automated
+(`creative/pipeline.py`'s FFmpeg assembly).
 
 **Boundaries:** consumes the pipeline's stage outputs (keyframes, clips,
 narration, subtitles); does not own generation itself.
 
 **Help wanted:**
-- `[Timeline] Timeline UI` (Gradio-based, matching `app.py`'s existing UI
-  stack)
-- `[Timeline] Shot reorder` / `[Timeline] Trimming` / `[Timeline] Transitions`
-- `[Timeline] Audio track mixing UI` (BGM volume/fade, already computed in
-  `core/audio.py` — this is UI, not new mixing logic)
-- `[Timeline] Subtitle editor`
-- `[Timeline] Scene replacement UI` — a UI layer over the scene-level
-  regeneration `creative/pipeline.py` already supports at the API level.
+- `[Timeline] Timeline for Create` — reuse `studio/ui/timeline.js` over
+  the AI clips (order, trims, transitions) before the final edit
+- `[Timeline] Trimming` inside a clip (in/out points for video shots)
+- `[Timeline] Audio track mixing UI` (BGM volume/fade per section,
+  already computed in `core/audio.py` — this is UI, not new mixing logic)
+- `[Timeline] Subtitle editor` for Create's narration subtitles
+- `[Timeline] Undo / redo` for editor actions
 
 ---
 

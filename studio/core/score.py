@@ -235,7 +235,9 @@ def assign_temporal_clusters(assets: list[dict], gap_minutes: float, field: str 
     cluster = 0
     prev_t = None
     for a in ordered:
-        t = datetime.fromisoformat(a["timestamp"])
+        # Video creation_time is tz-aware ("...Z") while EXIF/mtime are naive;
+        # compare everything as naive or mixed folders crash here.
+        t = datetime.fromisoformat(a["timestamp"]).replace(tzinfo=None)
         if prev_t is not None and (t - prev_t).total_seconds() / 60.0 > gap_minutes:
             cluster += 1
         a[field] = cluster

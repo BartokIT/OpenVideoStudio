@@ -1,0 +1,346 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>OpenVideoStudio</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%236f7bd4'/%3E%3Cpath d='M12 9l12 7-12 7z' fill='white'/%3E%3C/svg%3E">
+<link rel="stylesheet" href="/static/css/app.css">
+<link rel="stylesheet" href="/ui/timeline.css">
+</head>
+<body>
+<div class="app" id="app">
+
+  <!-- ============================================================ top bar -->
+  <header class="topbar">
+    <div class="brand"><span class="logo" data-icon="logo"></span>OpenVideoStudio</div>
+    <div class="seg mode-switch" id="modeSwitch" role="tablist" aria-label="Workspace">
+      <button data-mode="remix" class="on" title="Edit your own photos and clips"><span data-icon="film"></span>Remix</button>
+      <button data-mode="create" title="Generate a video from a prompt with local AI"><span data-icon="sparkles"></span>Create</button>
+    </div>
+    <div class="project remix-only">
+      <input id="projectName" class="project-name" placeholder="Untitled project" spellcheck="false" aria-label="Project name">
+      <span id="runLabel" class="muted small"></span>
+    </div>
+    <div class="project create-only">
+      <span id="createTitle" class="strong ellipsis"></span>
+      <span id="createLabel" class="muted small"></span>
+    </div>
+    <nav class="actions remix-only">
+      <button class="btn ghost" id="btnHome" title="New project or open one (Ctrl+O)"><span data-icon="folder"></span>Projects</button>
+      <button class="btn ghost" id="btnSave" title="Save project (Ctrl+S)"><span data-icon="save"></span>Save</button>
+      <span class="divider"></span>
+      <button class="btn" id="btnPreview" title="Render the first 15 seconds at 540p"><span data-icon="eye"></span>Preview 15 s</button>
+      <button class="btn primary" id="btnRender" title="Render the final video"><span data-icon="export"></span>Render</button>
+    </nav>
+    <nav class="actions create-only">
+      <span class="svc" id="svcOllama" title="Local language model (script and storyboard)"><i></i>Ollama</span>
+      <span class="svc" id="svcComfy" title="Image and video generation"><i></i>ComfyUI</span>
+    </nav>
+  </header>
+
+  <main class="workspace">
+
+    <!-- ======================================================= left panel -->
+    <aside class="panel">
+      <nav class="tabs" data-tabs="left">
+        <button class="tab active" data-tab="media"><span data-icon="image"></span>Media</button>
+        <button class="tab" data-tab="music"><span data-icon="music"></span>Music</button>
+        <button class="tab" data-tab="online"><span data-icon="globe"></span>Online</button>
+      </nav>
+
+      <section class="pane active" data-pane="media">
+        <div class="pane-tools">
+          <div class="seg seg-sm" id="mediaFilter">
+            <button data-v="all" class="on">All <b id="cntAll">0</b></button>
+            <button data-v="in">In film <b id="cntIn">0</b></button>
+            <button data-v="out">Left out <b id="cntOut">0</b></button>
+          </div>
+        </div>
+        <div class="media-grid scroll" id="mediaGrid"></div>
+        <div class="legend">
+          <span><i class="dot red"></i>removed by you</span><span><i class="dot amber"></i>duplicate</span>
+          <span><i class="dot blue"></i>over length</span><span><i class="dot grey"></i>missing</span>
+        </div>
+      </section>
+
+      <section class="pane" data-pane="music">
+        <div class="group">
+          <div class="row between">
+            <label class="switch-line"><input type="checkbox" data-opt="beat_sync"><span class="switch"></span>Cut to the music</label>
+            <span class="muted small" id="tempoLabel"></span>
+          </div>
+          <div class="seg seg-sm full" data-opt="music_sync" data-choices="music_sync"></div>
+          <div class="row gap">
+            <span class="label-inline" data-icon="volume" title="Music volume"></span>
+            <input type="range" min="0.05" max="1" step="0.05" data-opt="music_volume" class="grow">
+            <output class="small mono" data-out="music_volume"></output>
+          </div>
+          <label class="switch-line small"><input type="checkbox" data-opt="music_credit_on"><span class="switch"></span>Music credit on the closing card</label>
+        </div>
+        <div class="list-head">
+          <span>Tracks</span>
+          <button class="btn xs" id="btnImportMusic"><span data-icon="upload"></span>Import…</button>
+          <input type="file" id="musicFile" accept="audio/*,.mp3,.m4a,.wav,.ogg,.flac" hidden>
+        </div>
+        <div class="track-list scroll" id="trackList"></div>
+      </section>
+
+      <section class="pane" data-pane="online">
+        <form class="group" id="onlineForm">
+          <div class="search">
+            <span data-icon="search"></span>
+            <input id="onlineQuery" placeholder="acoustic guitar summer" autocomplete="off">
+          </div>
+          <div class="row gap">
+            <select id="onlineMood" class="grow"><option value="">Any mood</option></select>
+            <select id="onlineSource" class="grow"></select>
+            <button class="btn" type="submit">Search</button>
+          </div>
+        </form>
+        <div class="track-list scroll" id="onlineResults">
+          <div class="empty small">Free Creative Commons music. Preview a track, then add it to your library.</div>
+        </div>
+        <div class="footnote">Check each licence: most require the credit, <b>NC</b> excludes commercial use.</div>
+      </section>
+    </aside>
+
+    <!-- =========================================================== viewer -->
+    <section class="viewer">
+      <div class="viewer-head">
+        <span id="monShot" class="muted">No project open</span>
+        <span id="monTrans" class="chip" hidden></span>
+        <span id="monTexts" class="chip ghost" hidden></span>
+        <span class="grow"></span>
+        <span id="monCut" class="chip accent" hidden></span>
+      </div>
+      <div class="stage" id="stage">
+        <div class="frame" id="frame">
+          <img id="monImg" alt="">
+          <video id="monVideo" playsinline hidden></video>
+          <button class="icon-btn close-video" id="closeVideo" hidden title="Back to the frame"><span data-icon="x"></span></button>
+          <div class="stage-empty" id="stageEmpty"><span data-icon="film"></span><p>Open a project or start a new one.</p></div>
+          <div class="busy" id="stageBusy" hidden><div class="spinner"></div><span id="stageBusyText"></span></div>
+        </div>
+      </div>
+      <div class="transport">
+        <div class="tc mono"><span id="tcCur">00:00.00</span><span class="muted"> / </span><span id="tcTot" class="muted">00:00.00</span></div>
+        <div class="transport-btns">
+          <button class="icon-btn" id="tPrev" title="Previous cut ( , )"><span data-icon="prev"></span></button>
+          <button class="icon-btn" id="tBack" title="Back 1 s (←)"><span data-icon="back"></span></button>
+          <button class="icon-btn play" id="tPlay" title="Play / pause (Space)"><span data-icon="play"></span></button>
+          <button class="icon-btn" id="tFwd" title="Forward 1 s (→)"><span data-icon="fwd"></span></button>
+          <button class="icon-btn" id="tNext" title="Next cut ( . )"><span data-icon="next"></span></button>
+        </div>
+        <div class="transport-right small muted" id="playNote">Draft playback · music only</div>
+      </div>
+    </section>
+
+    <!-- ====================================================== right panel -->
+    <aside class="panel">
+      <nav class="tabs" data-tabs="right">
+        <button class="tab active" data-tab="shot"><span data-icon="crop"></span>Shot</button>
+        <button class="tab" data-tab="look"><span data-icon="palette"></span>Look</button>
+        <button class="tab" data-tab="text"><span data-icon="text"></span>Text</button>
+        <button class="tab" data-tab="trans"><span data-icon="shuffle"></span>Cuts</button>
+        <button class="tab" data-tab="export"><span data-icon="export"></span>Export</button>
+      </nav>
+
+      <section class="pane active" data-pane="shot">
+        <div class="empty" id="shotEmpty">
+          <span data-icon="crop"></span>
+          <p>Select a clip on the timeline or a photo in Media.</p>
+        </div>
+        <div class="shot" id="shotForm" hidden>
+          <div class="shot-head">
+            <img id="shotThumb" alt="">
+            <div class="shot-title">
+              <div class="strong ellipsis" id="shotName"></div>
+              <div class="muted small ellipsis" id="shotMeta"></div>
+              <div class="small" id="shotWhen"></div>
+            </div>
+          </div>
+          <label class="switch-line"><input type="checkbox" id="shotEnabled"><span class="switch"></span>In the film
+            <span class="chip warn small" id="shotExcluded" hidden></span></label>
+          <div class="grid2">
+            <label class="field">Duration <span class="muted small" id="shotLock"></span>
+              <input type="number" step="0.1" min="0.5" max="60" id="shotDuration"></label>
+            <label class="field">Camera<select id="shotMotion"></select></label>
+          </div>
+          <label class="field">Transition into this shot<select id="shotTransition"></select></label>
+          <label class="field">Text on this shot
+            <input id="shotText" placeholder="Caption or chapter title" spellcheck="false"></label>
+          <div class="hint" id="shotTextHint"></div>
+          <div class="btn-row">
+            <button class="btn sm" id="shotEarlier"><span data-icon="left"></span>Earlier</button>
+            <button class="btn sm" id="shotLater">Later<span data-icon="right"></span></button>
+            <button class="btn sm" id="shotCut" title="Render ~1 s around the transition into this shot"><span data-icon="scissors"></span>Preview cut</button>
+          </div>
+        </div>
+      </section>
+
+      <section class="pane" data-pane="look">
+        <div class="look-grid" id="lookGrid"></div>
+        <div class="look-desc small" id="lookDesc"></div>
+        <label class="field">Photo framing</label>
+        <div class="seg full" data-opt="photo_fit" data-choices="fits"></div>
+      </section>
+
+      <section class="pane" data-pane="text">
+        <label class="field">Opening title<input data-opt="title" placeholder="Our Family Story" spellcheck="false"></label>
+        <div class="grid2">
+          <label class="field">Subtitle<input data-opt="subtitle" placeholder="1979 – 2026" spellcheck="false"></label>
+          <label class="field">Line above the title<input data-opt="kicker" placeholder="A film by…" spellcheck="false"></label>
+        </div>
+        <label class="field">Closing text<input data-opt="closing_text" placeholder="Fine · The End" spellcheck="false"></label>
+        <div class="grid2 toggles">
+          <label class="switch-line"><input type="checkbox" data-opt="chapter_titles"><span class="switch"></span>Chapter titles</label>
+          <label class="switch-line"><input type="checkbox" data-opt="captions"><span class="switch"></span>Photo captions</label>
+        </div>
+        <div class="grid2">
+          <label class="field">Font<select data-opt="font" data-choices="fonts"></select></label>
+          <label class="field">Animation<select data-opt="title_anim" data-choices="anims"></select></label>
+        </div>
+        <div class="hint">Chapter titles come from folder names and dates. Edit one on the timeline (double-click) or in Shot.</div>
+      </section>
+
+      <section class="pane" data-pane="trans">
+        <label class="field">Transition style<select data-opt="transition_mode" data-choices="transition_modes"></select></label>
+        <div class="hint" id="transHint"></div>
+        <label class="switch-line"><input type="checkbox" data-opt="transition_only"><span class="switch"></span>Only the favoured transition</label>
+        <label class="field">Face morph between portraits</label>
+        <div class="seg full" data-opt="facemorph" data-choices="facemorph"></div>
+        <label class="field">Transition length
+          <span class="row gap"><input type="range" min="0.5" max="2" step="0.1" data-opt="transition_speed" class="grow">
+          <output class="small mono" data-out="transition_speed"></output></span></label>
+        <div class="hint">Click a transition on the timeline to change a single cut.</div>
+      </section>
+
+      <section class="pane" data-pane="export">
+        <label class="field">Resolution</label>
+        <div class="seg full" data-opt="resolution" data-choices="resolutions"></div>
+        <div class="btn-col">
+          <button class="btn" id="expPreview"><span data-icon="eye"></span>Quick preview · first 15 s</button>
+          <button class="btn primary" id="expRender"><span data-icon="export"></span>Render final video</button>
+        </div>
+        <div class="outputs" id="outputs"></div>
+        <button class="btn ghost sm" id="btnOpenFolder"><span data-icon="folder"></span>Open the project folder</button>
+      </section>
+    </aside>
+  </main>
+
+  <!-- ============================================================= dock -->
+  <section class="dock"><div id="timeline" class="timeline-host"></div></section>
+
+  <!-- ========================================================= create -->
+  <main class="create-ws">
+    <aside class="panel">
+      <nav class="tabs" data-tabs="cleft">
+        <button class="tab active" data-tab="idea"><span data-icon="sparkles"></span>New video</button>
+        <button class="tab" data-tab="recent"><span data-icon="folder"></span>Recent</button>
+      </nav>
+      <section class="pane active" data-pane="idea">
+        <label class="field">Describe the video
+          <textarea id="cPrompt" rows="5" placeholder="An astronaut discovers an abandoned ancient city on Mars." spellcheck="true"></textarea></label>
+        <div class="grid2">
+          <label class="field">Length (seconds)<input type="number" id="cDuration" min="5" max="180" step="5"></label>
+          <label class="field">Language<div class="seg full" id="cLanguage"></div></label>
+        </div>
+        <label class="field">Format</label>
+        <div class="seg full" id="cAspect"></div>
+        <div class="hint" id="cAspectHint"></div>
+        <label class="field">Style<input id="cStyle" placeholder="cinematic sci-fi" spellcheck="false"></label>
+        <label class="field">Music<select id="cMusic"></select></label>
+        <button class="btn primary lg" id="cWrite"><span data-icon="sparkles"></span>Write script and storyboard</button>
+        <div class="hint" id="cModel"></div>
+      </section>
+      <section class="pane" data-pane="recent">
+        <div class="home-list scroll" id="cRecent"></div>
+      </section>
+    </aside>
+
+    <section class="board">
+      <div class="board-head">
+        <div class="grow ellipsis"><span class="strong" id="cBoardTitle">Storyboard</span>
+          <span class="muted small" id="cBoardMeta"></span></div>
+        <span class="chip warn" id="cWarnings" hidden></span>
+        <span class="chip accent" id="cSaved" hidden>Saved</span>
+      </div>
+      <div class="scenes scroll" id="cScenes">
+        <div class="empty"><span data-icon="sparkles"></span>
+          <p>Describe the video on the left. The local model writes a script and a storyboard you can edit before anything is generated.</p></div>
+      </div>
+    </section>
+
+    <aside class="panel">
+      <nav class="tabs" data-tabs="cright">
+        <button class="tab active" data-tab="gen"><span data-icon="film"></span>Generate</button>
+      </nav>
+      <section class="pane active" data-pane="gen">
+        <div class="gen-gate" id="cGate">
+          <span data-icon="lock"></span>
+          <div><b>Review first.</b> Nothing runs on the GPU until you approve the storyboard. ComfyUI starts automatically if needed.</div>
+        </div>
+        <ol class="stages" id="cStages"></ol>
+        <button class="btn primary" id="cGenerate" disabled><span data-icon="check"></span>Approve and generate</button>
+        <div class="home-progress" id="cProgress" hidden><div class="bar"><i id="cBar"></i></div><span id="cMsg" class="small muted"></span></div>
+        <div class="final" id="cFinal" hidden>
+          <video id="cVideo" controls playsinline></video>
+          <div class="row between"><span class="small muted" id="cFinalWhen"></span>
+            <button class="btn ghost sm" id="cOpenFolder"><span data-icon="folder"></span>Open folder</button></div>
+        </div>
+      </section>
+    </aside>
+  </main>
+
+  <footer class="statusbar">
+    <span id="stSummary" class="muted"></span>
+    <span class="grow"></span>
+    <span id="stJob" class="job" hidden><span class="spinner xs"></span><span id="stJobText"></span>
+      <span class="bar"><i id="stJobBar"></i></span></span>
+    <span class="grow"></span>
+    <span id="stRight" class="muted"></span>
+  </footer>
+</div>
+
+<!-- ================================================================ home -->
+<div class="home" id="home" hidden>
+  <div class="home-card">
+    <button class="icon-btn home-close" id="homeClose" title="Close (Esc)"><span data-icon="x"></span></button>
+    <div class="home-new">
+      <h2><span data-icon="sparkles"></span>New project</h2>
+      <p class="muted small">Pick a folder of photos and clips. The plan, chapters and cuts are generated automatically; then fine-tune everything here.</p>
+      <label class="field">Media folder
+        <span class="row gap"><input id="newFolder" class="grow" placeholder="D:\Photos\Trip 2026" spellcheck="false">
+        <button class="btn" type="button" id="newBrowse"><span data-icon="folder"></span>Browse…</button></span></label>
+      <div class="grid2">
+        <label class="field">Length (seconds)<input type="number" id="newDuration" min="10" step="10"></label>
+        <label class="field">Order<div class="seg full" id="newSort"></div></label>
+      </div>
+      <div class="grid2">
+        <label class="field">Look<select id="newLook"></select></label>
+        <label class="field">Music<select id="newMusic"></select></label>
+      </div>
+      <div class="home-progress" id="newProgress" hidden><div class="bar"><i id="newBar"></i></div><span id="newMsg" class="small muted"></span></div>
+      <button class="btn primary lg" id="newCreate"><span data-icon="sparkles"></span>Generate the plan</button>
+      <button class="btn ghost sm" id="homeToCreate" type="button">No photos? Generate a video from a prompt with local AI<span data-icon="right"></span></button>
+    </div>
+    <div class="home-open">
+      <div class="list-head"><span>Saved projects</span><button class="btn xs" id="openFile"><span data-icon="folder"></span>Open file…</button></div>
+      <div class="home-list scroll" id="projectList"></div>
+      <div class="list-head"><span>Recent sessions</span></div>
+      <div class="home-list scroll" id="recentList"></div>
+    </div>
+  </div>
+</div>
+
+<dialog id="player" class="player">
+  <div class="player-head"><span id="playerTitle"></span><button class="icon-btn" id="playerClose"><span data-icon="x"></span></button></div>
+  <video id="playerVideo" controls playsinline></video>
+</dialog>
+
+<div class="toasts" id="toasts"></div>
+<audio id="musicAudio" preload="none"></audio>
+<script type="module" src="/static/js/main.js"></script>
+</body>
+</html>

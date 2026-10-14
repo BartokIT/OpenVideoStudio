@@ -53,6 +53,7 @@ config option):
 | LTX-Video checkpoint | `ltxv-2b-0.9.8-distilled-fp8.safetensors` | Image-to-video clip generation | [`Lightricks/LTX-Video`](https://huggingface.co/Lightricks/LTX-Video) on Hugging Face — download into ComfyUI's `models/checkpoints/`, keeping this exact filename | 4.46 GB |
 | T5XXL text encoder | `t5xxl_fp8_e4m3fn.safetensors` | Required by the LTX-Video graph | [`comfyanonymous/flux_text_encoders`](https://huggingface.co/comfyanonymous/flux_text_encoders) on Hugging Face — download into ComfyUI's `models/text_encoders/`, keeping this exact filename | 4.89 GB |
 | MediaPipe face detector | `face_detector.tflite` | Media Remix's photo scoring (not required for the AI Creation pipeline) | `https://storage.googleapis.com/mediapipe-models/face_detector/blaze_face_short_range/float16/latest/blaze_face_short_range.tflite` — save into `assets/face_detector.tflite` (relative to `studio/` — you're already inside it from step 2; the directory exists but is empty in a fresh clone) | 228 KB |
+| MediaPipe face landmarker | `face_landmarker.task` | Optional: face-aligned morph transitions in the Remix editor (skipped when the file is missing) | `https://storage.googleapis.com/mediapipe-models/face_landmarker/face_landmarker/float16/latest/face_landmarker.task` — save into `assets/face_landmarker.task` | 3.6 MB |
 
 These sources were confirmed by directly checking each repository's/URL's
 actual file listing at prep time — filenames and hosting can change; if a
@@ -94,27 +95,42 @@ the default one and can't be reconfigured without a restart) and
 
 ```bash
 ollama serve            # if not already running as a service
-# start ComfyUI per its own install instructions, default port 8188
 ```
+
+ComfyUI doesn't need to be started by hand: the editor starts it on
+port 8188 the first time a generation needs it, using the portable build
+next to `COMFYUI_ROOT` (`…\ComfyUI_windows_portable\python_embeded`). If
+your ComfyUI install is laid out differently, set `COMFYUI_PORTABLE` in
+`.env` to the folder that contains `python_embeded/` and `ComfyUI/`, or
+start ComfyUI yourself (default port 8188) — the editor uses one that is
+already running.
 
 ## 6. Run
 
 Still in `OpenVideoStudio/studio`:
 
 ```bash
-python app.py
+python -m server
 ```
 
-Opens a local Gradio UI with two tabs: **AI Creation** (the
-prompt-to-video pipeline) and **Media Remix** (personal photo/video
-montage — a separate, secondary tool sharing the same FFmpeg/audio/scoring
-core).
+Opens the OpenVideoStudio editor at http://127.0.0.1:7870 (add
+`--port N` for another port, `--no-browser` to skip opening it). Two
+workspaces, switched at the top: **Create** (the prompt-to-video
+pipeline: script and storyboard, your review, then generation) and
+**Remix** (your own photos and clips edited into a film — needs neither
+Ollama nor ComfyUI). On Windows, `Avvia_OpenVideoStudio.bat` /
+`Ferma_OpenVideoStudio.bat` in the repository root start and stop it.
 
 ## Troubleshooting
 
 - **"Ollama is not reachable"** — confirm `ollama serve` is running and
   `[providers].ollama_server` in `config.toml` matches the port it's
-  listening on.
+  listening on. The dots next to *Ollama* and *ComfyUI* in the Create
+  workspace show what the editor can reach (amber: ComfyUI will be
+  started automatically).
+- **Narration fails with `403 … speech.platform.bing.com`** — Edge TTS
+  rejects outdated clients; upgrade it (`pip install -U edge-tts`, 7.3.1
+  or newer).
 - **ComfyUI errors / `comfy_root is not configured`** — confirm
   `COMFYUI_ROOT` is set in `.env` (in `studio/` — not just `.env.example`)
   and points at the directory containing `input/`/`output/`, not the

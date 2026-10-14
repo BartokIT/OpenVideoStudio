@@ -37,7 +37,8 @@ and ComfyUI installs. Realistic expectations going in:
 3. The four required model files, saved under the exact filenames the
    code expects (`INSTALL.md` has the full table with sources).
 4. `studio/.env`, pointing `COMFYUI_ROOT` at your ComfyUI install.
-5. `ollama serve` and ComfyUI running, then `python app.py`.
+5. `ollama serve` running, then `python -m server` (the editor starts
+   ComfyUI by itself when a generation needs it).
 
 → **Full instructions:** [`INSTALL.md`](INSTALL.md)
 
@@ -52,8 +53,8 @@ python -m pytest tests/ -q
 
 This runs against fakes/mocks for every provider — it confirms your
 Python environment and the pipeline's own logic are sound, not that
-Ollama/ComfyUI themselves are reachable. For that, just run `python
-app.py` and try a short prompt.
+Ollama/ComfyUI themselves are reachable. For that, run `python -m server`
+and try a short prompt in the Create workspace.
 
 Ran into something not covered here or in `INSTALL.md`'s troubleshooting
 section? Open a

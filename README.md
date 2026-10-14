@@ -35,7 +35,7 @@ From one prompt to a complete video — most of it never leaves your machine.
 | **What it is** | An open-source pipeline that turns one text prompt into a fully edited, narrated, subtitled video — script → storyboard → character/environment identity → keyframes → video clips → narration → subtitles → final video. |
 | **Why it exists** | Built by one developer on a 6GB laptop GPU, without a GPU farm or unlimited AI credits — so the pipeline had to actually run on modest hardware, not just a data-center demo. |
 | **How it's different** | Local-first (script/storyboard/identity/keyframes/video all run on your own machine), provider-swappable by config not code, resumable with per-scene checkpointing, and a mandatory human review gate before any GPU generation starts — see [Features](#features) for what that means concretely. |
-| **How to try it** | `git clone` → `pip install -r requirements.txt` → `python app.py`. Full steps in [Quick Start](#quick-start). |
+| **How to try it** | `git clone` → `pip install -r requirements.txt` → `python -m server`. Full steps in [Quick Start](#quick-start). |
 
 *One thing worth knowing up front: narration currently uses one cloud
 service by default (Edge TTS) — not buried, see
@@ -190,14 +190,26 @@ git clone <repository-url>
 cd OpenVideoStudio/studio
 pip install -r requirements.txt
 cp .env.example .env    # set COMFYUI_ROOT
-python app.py
+python -m server        # opens http://127.0.0.1:7870
 ```
 
+On Windows, `Avvia_OpenVideoStudio.bat` does the last step and
+`Ferma_OpenVideoStudio.bat` stops everything (editor, ComfyUI, Ollama's
+loaded model).
+
 Targeting under 10 minutes once you already have the required models
-downloaded. Opens a local Gradio UI with two tabs: **AI Creation** (the
-prompt-to-video pipeline above) and **Media Remix** (turn your own
-personal photo/video library into an edited montage, built on the same
-shared FFmpeg/audio/scoring core).
+downloaded. Opens the OpenVideoStudio editor, a single-screen local web
+app with two workspaces:
+
+- **Create** — the prompt-to-video pipeline above: script and storyboard
+  from the local LLM, an editable storyboard you review, then keyframes,
+  clips, narration, subtitles and the final edit after you approve.
+  ComfyUI is started automatically when a generation needs it (from
+  `COMFYUI_ROOT`); Ollama must be running.
+- **Remix** — turn your own photo/video library into an edited film:
+  automatic plan, monitor, timeline, media bin, looks, titles,
+  transitions, music cut to the beat, projects, background renders.
+  Doesn't need ComfyUI or Ollama.
 
 Verify your install without touching a GPU:
 

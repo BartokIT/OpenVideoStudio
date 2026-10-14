@@ -63,11 +63,11 @@ plausible-sounding task is one this project can support as described:
 7. **Improve or add a translation** — `README_CN.md` exists; other
    languages don't yet. See the Documentation & Localization track in
    [`COMMUNITY_TRACKS.md`](COMMUNITY_TRACKS.md).
-8. **Suggest a small UI improvement** — the Gradio interface in `app.py`
-   is functional, not polished; a labeling, layout, or clarity fix is a
+8. **Suggest a small UI improvement** — the editor in `studio/web`
+   (vanilla JS, no build step); a labeling, layout, or clarity fix is a
    real, scoped contribution.
 9. **Add documentation screenshots** — the install guide and README
-   describe the Gradio UI in text; real screenshots (redact any local
+   describe the editor in text; real screenshots (redact any local
    paths first) would help a lot.
 10. **Try an alternative Ollama-compatible LLM model** — the LLM
     provider is genuinely config-driven (`config.toml`'s `ollama_model`)
