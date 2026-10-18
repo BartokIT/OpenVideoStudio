@@ -86,11 +86,11 @@ and where you're expected to intervene. For the component-level view, see
 |---|---|
 | Script, Storyboard, Identity | Local (Ollama) |
 | Keyframes, Video clips | Local (ComfyUI) |
-| Narration | **Cloud** (Edge TTS) by default — the one disclosed exception |
+| Narration | **Cloud** (Edge TTS) by default; **local** with Kokoro or Chatterbox (Create → Voice) |
 | Subtitles, Automated edit | Local (FFmpeg) |
 
-A fully local/offline TTS provider doesn't ship yet — see
-[`ISSUES_SEED.md`](ISSUES_SEED.md).
+The local voices are installed from the Voice panel into their own
+environment — see "Local voices" in [`INSTALL.md`](INSTALL.md).
 
 ### Resumability
 

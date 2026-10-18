@@ -1,3 +1,4 @@
+# Modified in 2026 in the BartokIT/OpenVideoStudio fork - see NOTICE and CHANGELOG.md.
 """TTSProvider backed by Edge TTS — free, no API key, good multilingual
 voice coverage. Genuinely new capability for this codebase: the only
 prior voice work in this codebase's earlier private prototypes was a
@@ -22,6 +23,11 @@ from providers.base import TTSResult
 
 _DEFAULT_VOICES = {
     "en": "en-US-AriaNeural",
+    "it": "it-IT-ElsaNeural",
+    "es": "es-ES-ElviraNeural",
+    "fr": "fr-FR-DeniseNeural",
+    "de": "de-DE-KatjaNeural",
+    "pt": "pt-BR-FranciscaNeural",
 }
 
 

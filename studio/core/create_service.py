@@ -28,6 +28,7 @@ if str(STUDIO_ROOT) not in sys.path:
 import creative.pipeline as cp  # noqa: E402
 import studio_service as svc  # noqa: E402
 from studio_service import ServiceError, run_lock  # noqa: E402
+import voices  # noqa: E402
 
 CREATE_ID_RE = re.compile(r"^create_[0-9A-Za-z_]+$")
 COMFY_URL = "http://127.0.0.1:8188"
@@ -37,7 +38,7 @@ ASPECTS = [
     svc._c("16:9", "16:9 landscape", "16:9", "768×448 — same pixel budget, not separately validated"),
     svc._c("1:1", "1:1 square", "1:1", "608×608 — not separately validated"),
 ]
-LANGUAGES = [svc._c("en", "English", "EN")]
+LANGUAGES = voices.LANGUAGES
 GEN_STAGES = ["keyframes", "clips", "narration", "subtitles", "edit"]
 STAGE_LABELS = {"script": "Script", "storyboard": "Storyboard", "keyframes": "Keyframes", "clips": "Video clips",
                 "narration": "Narration", "subtitles": "Subtitles", "edit": "Final edit"}
@@ -152,7 +153,8 @@ def _stage_error(state, names) -> Optional[str]:
 
 
 def create(prompt: str, duration: float, aspect: str, style: str, language: str,
-           music_preset: Optional[str] = None, progress=None) -> str:
+           music_preset: Optional[str] = None, progress=None, tts_engine: Optional[str] = None,
+           tts_voice: Optional[str] = None) -> str:
     """Script + storyboard with the local LLM, then stops for review."""
     prompt = (prompt or "").strip()
     if not prompt:
@@ -161,14 +163,14 @@ def create(prompt: str, duration: float, aspect: str, style: str, language: str,
     if not _reachable(f"{_ollama_server()}/api/tags"):
         raise ServiceError(f"Ollama isn't reachable at {_ollama_server()} — start Ollama and try again.")
     aspect = aspect if aspect in svc.values(ASPECTS) else "9:16"
-    language = language if language in svc.values(LANGUAGES) else "en"
+    tts_engine, language, tts_voice = voices.resolve(tts_engine, language, tts_voice)
     try:
         duration = min(max(float(duration), 5.0), 180.0)
     except (TypeError, ValueError):
         duration = 15.0
     bgm = svc.resolve_bgm({"music_preset": music_preset, "look": "cinematic"}) if music_preset else None
     state = cp.new_run(svc.RUNS_ROOT, prompt, duration, (style or "").strip() or "cinematic", aspect, language,
-                       configured_ollama_model(), Path(bgm) if bgm else None)
+                       configured_ollama_model(), Path(bgm) if bgm else None, tts_engine, tts_voice)
     rd = cp.run_dir_for(svc.RUNS_ROOT, state.run_id)
     say(0.1, f"Writing the script with {state.llm_model}")
     state = cp.run_script(rd, state)
@@ -235,7 +237,8 @@ def state(run_id: str) -> dict:
     char = sb.get("character_identity") or None
     return {
         "run_id": run_id, "prompt": st.prompt, "duration": st.target_duration_seconds, "style": st.style,
-        "aspect": st.aspect_ratio, "language": st.language, "llm_model": st.llm_model, "bgm": st.bgm_path,
+        "aspect": st.aspect_ratio, "language": st.language,
+        "tts_engine": st.tts_engine or "edge_tts", "tts_voice": st.tts_voice, "llm_model": st.llm_model, "bgm": st.bgm_path,
         "reviewed": st.storyboard_reviewed, "stages": stages, "title": sb.get("title") or "",
         "scenes": [_scene_view(rd, s) for s in sb.get("scenes", [])],
         "warnings": sb.get("narrative_quality_warnings", []),
@@ -287,6 +290,40 @@ def update_scenes(run_id: str, scenes: list) -> dict:
     return state(run_id)
 
 
+def set_voice(run_id: str, engine: Optional[str], voice: Optional[str]) -> dict:
+    """Changes the narration voice of a creation. Its language stays (the
+    script is written in it); a narration already generated is redone on
+    the next "Generate", together with subtitles and the final edit."""
+    rd = run_dir(run_id)
+    with run_lock(run_id):
+        st = cp.load_run_state(rd)
+        if any(st.stages[k]["status"] == "running" for k in GEN_STAGES):
+            raise ServiceError("Generation is running — wait for it to finish.")
+        engine, _, voice = voices.resolve(engine, st.language, voice)
+        if (engine, voice) != (st.tts_engine or "edge_tts", st.tts_voice):
+            st.tts_engine, st.tts_voice = engine, voice
+            if st.stages["narration"]["status"] == "done":
+                path = rd / "storyboard.json"
+                sb = json.loads(path.read_text(encoding="utf-8"))
+                for s in sb.get("scenes", []):
+                    for k in ("narration_path", "narration_duration", "narration_word_timings"):
+                        s.pop(k, None)
+                path.write_text(json.dumps(sb, ensure_ascii=False, indent=2), encoding="utf-8")
+            for k in ("narration", "subtitles", "edit"):
+                if st.stages[k]["status"] in ("done", "failed"):
+                    st.stages[k] = {"status": "pending", "timestamp": None, "error": None, "qc": None}
+            cp.save_run_state(rd, st)
+    return state(run_id)
+
+
+def _free_comfy() -> None:
+    """Asks a running ComfyUI to unload its models (best effort)."""
+    try:
+        requests.post(f"{COMFY_URL}/free", json={"unload_models": True, "free_memory": True}, timeout=10)
+    except requests.RequestException:
+        pass
+
+
 def _clamp_durations(rd: Path) -> None:
     """Every scene 3–6 s before generating (the clip model's range), as the
     review step always enforced — the LLM sometimes proposes longer scenes."""
@@ -321,6 +358,8 @@ def approve_and_generate(run_id: str, progress=None) -> dict:
                  "subtitles": cp.run_subtitles, "edit": cp.run_edit}
         for name in GEN_STAGES:
             say(0.02 + 0.96 * done, f"{STAGE_LABELS[name]}…")
+            if name == "narration" and (st.tts_engine or "edge_tts") != "edge_tts"                     and st.stages[name]["status"] != "done":
+                _free_comfy()                           # the local voice needs the VRAM ComfyUI holds
             st = funcs[name](rd, st)
             if st.stages[name]["status"] != "done":
                 raise ServiceError(_stage_error(st, [name]) or f"{STAGE_LABELS[name]} failed")

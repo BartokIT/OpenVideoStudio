@@ -20,11 +20,10 @@ the full compatibility matrix and known Linux/macOS gaps.
   encoder fallback yet (tracked in `docs/HARDWARE.md`/`docs/ISSUES_SEED.md`).
 - An NVIDIA GPU with **6GB+ VRAM** is the only configuration actually
   tested end-to-end so far (see `docs/HARDWARE.md`)
-- Internet access for narration: the default TTS provider (Edge TTS) is
-  Microsoft's free online text-to-speech service, not a local model —
-  narration text is sent to it. Script/storyboard/image/video generation
-  are fully local; narration currently is not. See `README.md`'s "Local
-  by default, with one disclosed exception" section.
+- Internet access for narration **only with the default voice** (Edge TTS,
+  Microsoft's free online service — the narration text is sent to it). For
+  fully local narration, install Kokoro or Chatterbox from Create → Voice
+  (see "Local voices" below).
 
 ## 2. Get the code
 
@@ -120,6 +119,29 @@ pipeline: script and storyboard, your review, then generation) and
 **Remix** (your own photos and clips edited into a film — needs neither
 Ollama nor ComfyUI). On Windows, `Start_OpenVideoStudio.bat` /
 `Stop_OpenVideoStudio.bat` in the repository root start and stop it.
+
+## Local voices (optional)
+
+Create → **Voice** → **Install** on the Kokoro or Chatterbox card. The
+editor creates a separate Python environment in `studio/voices/env` (the
+engines need PyTorch and pin libraries the editor itself doesn't use),
+installs PyTorch — the CUDA 12.8 build when `nvidia-smi` is found, which
+also covers RTX 50xx cards, otherwise the CPU build — and the engine.
+Models download from Hugging Face on first use (Kokoro ~330 MB,
+Chatterbox ~3 GB) into the usual Hugging Face cache.
+
+- **Kokoro** (Apache-2.0) runs well on the CPU too. Non-English voices
+  use espeak-ng, which comes with the `espeakng-loader` package.
+- **Chatterbox** (MIT) needs an NVIDIA GPU in practice. Version 0.1.7
+  pins PyTorch 2.6, which has no kernels for RTX 50xx GPUs, so it is
+  installed without its pins next to the current PyTorch (verified on an
+  RTX 5080). Before narrating, the editor asks ComfyUI to unload its
+  models to free the VRAM. Voice samples to clone go in
+  `studio/voices/samples` (or **Add my voice…** in the panel).
+- The worker that runs the local engines logs to `studio/voices/worker.log`
+  and stops after 3 idle minutes, releasing the GPU.
+
+Delete `studio/voices` to uninstall.
 
 ## Troubleshooting
 

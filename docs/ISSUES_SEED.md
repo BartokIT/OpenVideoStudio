@@ -145,7 +145,7 @@ Expected result, Acceptance criteria, How to test.
 ### Provider Integrations (Track D)
 26. **[Provider] Additional image model adapter (e.g. Flux)** — `provider`, `comfyui`.
 27. **[Provider] ComfyUI workflow presets** — `provider`, `comfyui`. Packaged, swappable node-graph presets beyond the two hardcoded graphs.
-27b. **[Provider] Local/offline TTS provider** — `provider`, `audio`. The only shipped `TTSProvider` (Edge TTS) sends narration text to Microsoft's online service — see `README.md`'s local-by-default disclosure. A local/offline TTS implementation (e.g. Piper, Coqui) closes the one gap in the "entirely local" story. Relevant files: `studio/providers/base.py` (`TTSProvider` interface), `studio/providers/tts/edge_tts_provider.py` (reference implementation to follow the shape of).
+27b. **[Provider] Local/offline TTS provider** — *done in the BartokIT fork (2026-10-18): Kokoro and Chatterbox, see `studio/core/voices.py`.* — `provider`, `audio`. The only shipped `TTSProvider` (Edge TTS) sends narration text to Microsoft's online service — see `README.md`'s local-by-default disclosure. A local/offline TTS implementation (e.g. Piper, Coqui) closes the one gap in the "entirely local" story. Relevant files: `studio/providers/base.py` (`TTSProvider` interface), `studio/providers/tts/edge_tts_provider.py` (reference implementation to follow the shape of).
 
 ### Platform Support (Track E)
 28. **[Platform] Linux install guide + verification** — `help wanted`, `linux`.

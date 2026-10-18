@@ -4,6 +4,29 @@ Format loosely follows [Keep a Changelog](https://keepachangelog.com/).
 Dates reflect when work landed in the private development repository this
 public repository was prepared from.
 
+## Unreleased — local narration voices (2026-10-18)
+
+### Added
+- **Create → Voice** panel: narration engine, language and voice, with a
+  preview of each voice. Engines: **Edge TTS** (online, the default),
+  **Kokoro** (local, Apache-2.0, CPU or GPU) and **Chatterbox** (local GPU,
+  MIT, clones a voice from a short sample — "Add my voice…"). Languages:
+  English, Italian, Spanish, French, German, Portuguese; the script and
+  storyboard are written in the chosen language.
+- One-click install of the local engines into their own environment
+  (`studio/voices/env`, PyTorch CUDA 12.8 on NVIDIA GPUs, CPU otherwise),
+  `core/voices.py`. They run in a long-lived worker
+  (`providers/tts/local_worker.py`) that loads the model once per
+  narration and frees the GPU when done or idle.
+- Each creation remembers its voice (`tts_engine`, `tts_voice` in
+  `run_state.json`); **Use the selected voice for this video** changes it
+  afterwards and redoes only narration, subtitles and the final edit.
+- Before a local narration, ComfyUI is asked to unload its models.
+
+### Changed
+- The LLM prompts name the language ("Italian") instead of its code
+  ("it", which reads as an English word).
+
 ## Unreleased — English launchers, screenshots, licence review (2026-10-18)
 
 ### Added
