@@ -118,8 +118,8 @@ Opens the OpenVideoStudio editor at http://127.0.0.1:7870 (add
 workspaces, switched at the top: **Create** (the prompt-to-video
 pipeline: script and storyboard, your review, then generation) and
 **Remix** (your own photos and clips edited into a film — needs neither
-Ollama nor ComfyUI). On Windows, `Avvia_OpenVideoStudio.bat` /
-`Ferma_OpenVideoStudio.bat` in the repository root start and stop it.
+Ollama nor ComfyUI). On Windows, `Start_OpenVideoStudio.bat` /
+`Stop_OpenVideoStudio.bat` in the repository root start and stop it.
 
 ## Troubleshooting
 

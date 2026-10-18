@@ -1,3 +1,4 @@
+# Modified in 2026 in the BartokIT/OpenVideoStudio fork - see NOTICE and CHANGELOG.md.
 # Minimum versions actually tested, not exact pins (>=, not ==) - a
 # newer compatible version will satisfy these but isn't independently
 # verified, and pip is free to resolve higher. Not fully reproducible

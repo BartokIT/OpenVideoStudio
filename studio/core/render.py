@@ -1,3 +1,4 @@
+# Modified in 2026 in the BartokIT/OpenVideoStudio fork - see NOTICE and CHANGELOG.md.
 """FFmpeg/NVENC render pipeline.
 
 Reused, proven parameters, each carried over from a specific earlier

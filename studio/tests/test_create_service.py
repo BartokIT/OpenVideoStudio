@@ -108,6 +108,28 @@ def test_scene_edits_are_clamped_and_invalidate_generated_media(runs, monkeypatc
     assert not st["reviewed"] and all(s["status"] == "pending" for s in st["stages"][2:])
 
 
+def test_a_moved_run_finds_its_media_by_name(runs, monkeypatch, tmp_path):
+    _fake_script_and_storyboard(monkeypatch)
+    run_id = cs.create("x", 15, "9:16", "", "en")
+    rd = cs.run_dir(run_id)
+    (rd / "keyframes").mkdir()
+    (rd / "keyframes" / "scene_01.png").write_bytes(b"png")
+    old = tmp_path / "old_install" / "runs" / run_id               # where the run used to live
+    sb = json.loads((rd / "storyboard.json").read_text(encoding="utf-8"))
+    sb["scenes"][0]["keyframe_path"] = str(old / "keyframes" / "scene_01.png")
+    sb["scenes"][1]["keyframe_path"] = str(old / "keyframes" / "scene_02.png")   # really missing
+    (rd / "storyboard.json").write_text(json.dumps(sb), encoding="utf-8")
+
+    scenes = cs.state(run_id)["scenes"]
+    assert scenes[0]["keyframe"] and "scene_01.png" in scenes[0]["keyframe"]
+    assert scenes[1]["keyframe"] is None
+
+    cs._relocate_media(rd)
+    sb = json.loads((rd / "storyboard.json").read_text(encoding="utf-8"))
+    assert sb["scenes"][0]["keyframe_path"] == str(rd / "keyframes" / "scene_01.png")
+    assert sb["scenes"][1]["keyframe_path"] == str(old / "keyframes" / "scene_02.png")
+
+
 def test_generate_approves_starts_comfy_only_when_needed_and_runs_stages(runs, monkeypatch, tmp_path):
     _fake_script_and_storyboard(monkeypatch)
     run_id = cs.create("x", 15, "9:16", "", "en")

@@ -34,6 +34,18 @@ TTS）——不会藏着不提，见下文
 说明见
 [`examples/hero_demo/README.md`](examples/hero_demo/README.md)（英文）。*
 
+## 编辑器
+
+一个本地 Web 应用，一屏显示，无需滚动页面：用面板和标签页代替长表单。
+下面的截图使用的是 Create 流水线生成的 AI 示例素材。
+
+![Remix 工作区：素材库、带动画章节标题的监视器、镜头检查器，以及包含转场、标题轨和带节拍标记的音乐波形的时间线](docs/images/editor-remix.webp)
+
+| | |
+|---|---|
+| ![音乐标签页与外观标签页](docs/images/editor-music-looks.webp) | ![Create 工作区：可编辑的分镜、审核关卡与生成的竖屏视频](docs/images/editor-create.webp) |
+| *内置音乐预设、在线知识共享音乐搜索、按小节/节拍/重音剪辑；八种外观。* | *Create —— 在 GPU 运行前先审核可编辑的分镜，然后生成关键帧、片段、配音、字幕和成片。* |
+
 ## 项目愿景
 
 OpenVideoStudio 近期的目标就是现在已经上线的部分：一条可靠的、本地优先的、
@@ -160,8 +172,8 @@ OpenVideoStudio 编辑器（单屏本地网页应用），包含两个工作区�
 ComfyUI，Ollama 需要已在运行）和 **Remix**（把你自己的照片/视频素材库
 剪辑成成片：自动方案、监视器、时间线、素材库、风格、标题、转场、随节拍
 剪辑、项目保存、后台渲染，共用同一套 FFmpeg / 音频 / 评分核心逻辑）。
-Windows 上可直接运行 `Avvia_OpenVideoStudio.bat` 启动，
-`Ferma_OpenVideoStudio.bat` 停止。
+Windows 上可直接运行 `Start_OpenVideoStudio.bat` 启动，
+`Stop_OpenVideoStudio.bat` 停止。
 
 不需要 GPU 即可验证安装是否正确：
 
@@ -173,7 +185,8 @@ cd studio && python -m pytest tests/ -q
 
 已上线：提示词 → 剧本 → 分镜 → 角色/场景一致性设定 → 关键帧 → 视频片段 →
 配音 → 字幕 → 最终视频，本地 Ollama + ComfyUI 生成，按场景断点续跑，
-67/67 测试通过。尚未实现：专业模式的引导式界面、真正的时间线编辑器、
+单屏编辑器（Create + Remix，含时间线、外观、按音乐节拍剪辑、项目保存），
+199 项测试通过。尚未实现：专业模式的引导式界面、AI 创作的时间线、
 Ollama/ComfyUI/Edge TTS 之外的更多提供方，以及上方[项目愿景](#项目愿景)
 中提到的角色记忆 / 场景图谱 / 多智能体等更长期方向。
 

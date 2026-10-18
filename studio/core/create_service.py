@@ -181,13 +181,46 @@ def create(prompt: str, duration: float, aspect: str, style: str, language: str,
     return state.run_id
 
 
-def _scene_view(s: dict) -> dict:
+MEDIA_DIRS = {"keyframe_path": "keyframes", "clip_path": "clips"}
+
+
+def _media_path(rd: Path, s: dict, k: str) -> Optional[Path]:
+    """The scene's generated file. The storyboard stores absolute paths, so
+    after the run folder moves (another install, a renamed folder) the same
+    file is looked up by name in the run's own keyframes/ or clips/."""
+    p = s.get(k)
+    if not p:
+        return None
+    p = Path(p)
+    if p.exists():
+        return p
+    local = rd / MEDIA_DIRS[k] / p.name
+    return local if local.exists() else None
+
+
+def _relocate_media(rd: Path) -> None:
+    """Rewrites stale absolute paths so a moved run resumes instead of
+    regenerating keyframes and clips it already has."""
+    path = rd / "storyboard.json"
+    sb = json.loads(path.read_text(encoding="utf-8"))
+    changed = False
+    for s in sb.get("scenes", []):
+        for k in MEDIA_DIRS:
+            found = _media_path(rd, s, k)
+            if found and str(found) != s.get(k):
+                s[k] = str(found)
+                changed = True
+    if changed:
+        path.write_text(json.dumps(sb, ensure_ascii=False, indent=2), encoding="utf-8")
+
+
+def _scene_view(rd: Path, s: dict) -> dict:
     out = {k: s.get(k) for k in ("scene_number", "image_prompt", "video_motion_prompt", "narration_text",
                                  "subtitle_text", "description", "mood", "shot_size", "camera_movement")}
     out["duration_seconds"] = round(float(s.get("duration_seconds") or 0), 2)
     for k, key in (("keyframe_path", "keyframe"), ("clip_path", "clip")):
-        p = s.get(k)
-        out[key] = svc._versioned(Path(p)) if p and Path(p).exists() else None
+        p = _media_path(rd, s, k)
+        out[key] = svc._versioned(p) if p else None
     return out
 
 
@@ -204,7 +237,7 @@ def state(run_id: str) -> dict:
         "run_id": run_id, "prompt": st.prompt, "duration": st.target_duration_seconds, "style": st.style,
         "aspect": st.aspect_ratio, "language": st.language, "llm_model": st.llm_model, "bgm": st.bgm_path,
         "reviewed": st.storyboard_reviewed, "stages": stages, "title": sb.get("title") or "",
-        "scenes": [_scene_view(s) for s in sb.get("scenes", [])],
+        "scenes": [_scene_view(rd, s) for s in sb.get("scenes", [])],
         "warnings": sb.get("narrative_quality_warnings", []),
         "character": char if isinstance(char, dict) else None,
         "total": round(sum(float(s.get("duration_seconds") or 0) for s in sb.get("scenes", [])), 1),
@@ -279,6 +312,7 @@ def approve_and_generate(run_id: str, progress=None) -> dict:
         if st.stages["storyboard"]["status"] != "done":
             raise ServiceError("The storyboard isn't ready.")
         _clamp_durations(rd)
+        _relocate_media(rd)
         if st.stages["keyframes"]["status"] != "done" or st.stages["clips"]["status"] != "done":
             ensure_comfyui(say)
         st = cp.approve_storyboard(rd, st)

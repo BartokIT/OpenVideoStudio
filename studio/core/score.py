@@ -1,3 +1,4 @@
+# Modified in 2026 in the BartokIT/OpenVideoStudio fork - see NOTICE and CHANGELOG.md.
 """Media scoring — traditional/local signals only. No cloud upload, no VLM.
 
 An earlier private prototype instantiated a MediaPipe face detector but

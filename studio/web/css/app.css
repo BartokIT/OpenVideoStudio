@@ -178,6 +178,7 @@ input[type=range] { accent-color: var(--accent); height: 18px; margin: 0; }
 .chip.warn { background: rgba(220, 77, 77, .15); color: #f08b8b; }
 .chip.lic { background: rgba(63, 178, 127, .14); color: #7fd3ac; }
 .chip.lic.nc { background: rgba(235, 169, 42, .15); color: #f2c56f; }
+.chip.lic.nd { background: rgba(229, 83, 75, .15); color: #f19a94; }
 
 .muted { color: var(--text-2); }
 .small { font-size: 11.5px; }
@@ -206,6 +207,7 @@ input[type=range] { accent-color: var(--accent); height: 18px; margin: 0; }
 .media-card .meta { position: absolute; left: 0; right: 0; bottom: 0; display: flex; gap: 4px; align-items: center;
   padding: 10px 6px 4px; font-size: 10.5px; color: #fff; background: linear-gradient(transparent, rgba(0, 0, 0, .75)); }
 .media-card .meta .nm { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.media-card .meta svg { width: 12px; height: 12px; flex: none; }
 .media-card .badge { position: absolute; top: 4px; right: 4px; font-size: 9.5px; padding: 1px 5px; border-radius: 4px;
   background: rgba(0, 0, 0, .6); color: #fff; }
 .media-card .toggle { position: absolute; top: 4px; right: 4px; width: 24px; height: 24px; border-radius: 50%; border: 0;

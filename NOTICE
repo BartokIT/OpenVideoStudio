@@ -12,3 +12,18 @@ distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
+
+This distribution is a modified fork of OpenVideoStudio
+(https://github.com/BartokIT/OpenVideoStudio). Modifications made in 2026
+include a dedicated single-screen web editor (studio/server, studio/web,
+studio/ui), the Remix render engine (studio/core/pro), music, project and
+AI-creation services (studio/core/*_service.py, music.py, music_online.py,
+project.py) and changes to existing files, which carry a "Modified in 2026"
+line. See CHANGELOG.md and the git history for the per-file changes.
+
+Third-party material bundled in this repository:
+
+- Fonts in studio/assets/fonts/ (Playfair Display, Cormorant Garamond,
+  Montserrat, Inter, Bebas Neue, Great Vibes), unmodified, from the Google
+  Fonts repository. They are licensed under the SIL Open Font License 1.1
+  (see studio/assets/fonts/OFL.txt), not under the Apache License.

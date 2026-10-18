@@ -30,7 +30,7 @@ from typing import Callable, Optional
 
 import requests
 
-USER_AGENT = "OpenVideoStudio/0.5 (https://github.com/openvideostudio; local-first video tool)"
+USER_AGENT = "OpenVideoStudio/0.5 (https://github.com/BartokIT/OpenVideoStudio; local-first video tool)"
 TIMEOUT = 20
 SOURCES = ("openverse", "archive", "jamendo")
 SOURCE_LABELS = {"openverse": "Openverse (CC aggregator)", "archive": "Internet Archive (netlabels / public domain)",
@@ -62,6 +62,12 @@ class OnlineTrack:
     @property
     def downloadable(self) -> bool:
         return bool(self.download_url)
+
+    @property
+    def no_derivatives(self) -> bool:
+        """CC ND licences: putting music under pictures is an adaptation
+        (a "sync"), which ND does not allow, so the track can't go in a film."""
+        return bool(re.search(r"\bND\b", self.license or ""))
 
     def label(self) -> str:
         m, s = divmod(int(self.duration), 60)
@@ -239,6 +245,9 @@ def download(track: OnlineTrack, dest_dir: Path, progress: Optional[Callable[[fl
     tracks whose source does not allow downloading."""
     if not track.downloadable:
         raise PermissionError("This track cannot be downloaded (the artist allows streaming only).")
+    if track.no_derivatives:
+        raise PermissionError(f"{track.license} does not allow using the music in a video "
+                              "(syncing it to pictures is a derivative). Pick another track.")
     dest_dir = Path(dest_dir)
     dest_dir.mkdir(parents=True, exist_ok=True)
     base = f"{track.source}_{_slug(track.id, 24)}_{_slug(track.title)}"

@@ -1,3 +1,4 @@
+# Modified in 2026 in the BartokIT/OpenVideoStudio fork - see NOTICE and CHANGELOG.md.
 """Deterministic, rule-based edit planning. No LLM, no semantic model.
 
 An earlier private prototype never varied shot duration by content

@@ -608,9 +608,11 @@ function renderOnline() {
     previewButton(t.audio_url, `online:${t.source}:${t.id}`),
     h('div', {}, h('div.t1', {}, t.title), h('div.t2', {}, `${t.creator} · ${t.duration ? fmtShort(t.duration) : '?'}`)),
     h('div.right', {},
-      h('span.chip.lic', { class: /NC/.test(t.license) ? 'nc' : '', title: t.license_url || '' }, t.license.replace(/^CC /, '')),
+      h('span.chip.lic', { class: t.no_derivatives ? 'nd' : /NC/.test(t.license) ? 'nc' : '', title: t.license_url || '' }, t.license.replace(/^CC /, '')),
       h('button.btn.xs', {
-        disabled: !t.downloadable, title: t.downloadable ? 'Download into your tracks' : 'Streaming only: the artist does not allow downloads',
+        disabled: !t.downloadable || t.no_derivatives,
+        title: t.no_derivatives ? 'No derivatives (ND): the licence does not allow using it in a video'
+          : t.downloadable ? 'Download into your tracks' : 'Streaming only: the artist does not allow downloads',
         onclick: (e) => { e.stopPropagation(); useOnline(i); },
       }, 'Use')))));
 }

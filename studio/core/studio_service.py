@@ -754,7 +754,8 @@ def search_music(query: str, source: str, mood: Optional[str]) -> list:
         raise ServiceError(str(e))
     except Exception as e:
         raise ServiceError(f"Search failed: {e}")
-    return [{**music_online.asdict(t), "downloadable": t.downloadable, "label": t.label()} for t in res]
+    return [{**music_online.asdict(t), "downloadable": t.downloadable, "no_derivatives": t.no_derivatives,
+             "label": t.label()} for t in res]
 
 
 def download_music(track: dict, progress: Progress = None) -> dict:

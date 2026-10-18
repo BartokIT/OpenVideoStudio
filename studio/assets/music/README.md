@@ -46,6 +46,8 @@ Sources, in the order offered:
    it, and the credit names the artist and Jamendo as its API terms ask.
    Jamendo's API is free for non-commercial use.
 
-Licences differ per track (many are *NC*, non-commercial, or *ND*, no
-derivatives): read the licence shown with each result before using it in
-a video you publish or monetise.
+Licences differ per track: read the licence shown with each result
+before using it in a video you publish or monetise. *NC* (non-commercial)
+tracks are flagged in amber. *ND* (no derivatives) tracks are flagged in
+red and can't be added: putting music under pictures counts as an
+adaptation, which ND does not allow.

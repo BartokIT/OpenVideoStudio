@@ -150,6 +150,13 @@ def test_download_writes_file_and_sidecar_then_library_lists_it(tmp_path, monkey
     with pytest.raises(PermissionError):
         mo.download(stream_only, tmp_path / "downloads")
 
+    for lic in ("CC BY-ND 4.0", "CC BY NC ND 3.0"):
+        nd = mo.OnlineTrack(**{**mo.asdict(track), "id": "nd", "license": lic})
+        assert nd.no_derivatives
+        with pytest.raises(PermissionError, match="video"):        # syncing to pictures is a derivative
+            mo.download(nd, tmp_path / "downloads")
+    assert not track.no_derivatives
+
 
 def _plan():
     shots = [{"shot_id": f"s{i}", "type": "image", "asset_path": f"{i}.jpg", "duration": 4.0, "enabled": True,

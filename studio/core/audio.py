@@ -1,3 +1,4 @@
+# Modified in 2026 in the BartokIT/OpenVideoStudio fork - see NOTICE and CHANGELOG.md.
 """BGM mixing with fades and beat-aligned shot durations.
 
 The amix filter_complex pattern (original vol 1.0, BGM vol 0.25, amix

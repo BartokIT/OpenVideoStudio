@@ -4,6 +4,39 @@ Format loosely follows [Keep a Changelog](https://keepachangelog.com/).
 Dates reflect when work landed in the private development repository this
 public repository was prepared from.
 
+## Unreleased — English launchers, screenshots, licence review (2026-10-18)
+
+### Added
+- README (English and Chinese): an "The editor" section with screenshots
+  of Remix and Create, taken with AI-generated sample media
+  (`docs/images/`).
+- `NOTICE`: states that this is a modified fork and lists the bundled
+  third-party fonts (SIL OFL 1.1); modified upstream files carry a
+  "Modified in 2026" line (Apache-2.0 §4(b)).
+
+### Changed
+- Launchers renamed to English: `Start_OpenVideoStudio.bat`,
+  `Stop_OpenVideoStudio.bat` (messages in English too); `.gitattributes`
+  keeps CRLF for `.bat` files.
+- Online music: tracks under a CC **ND** (no derivatives) licence are
+  flagged in red and can't be added — syncing music to pictures is an
+  adaptation, which ND forbids. The footnote now says so.
+- `studio/assets/fonts/OFL.txt` lists the copyright line of every bundled
+  font family, not just Montserrat.
+- README: Edge TTS is called out as an unofficial Microsoft endpoint
+  governed by Microsoft's terms; the licence section covers fonts, online
+  music and model weights; stale "no timeline editor" / "67/67 tests"
+  statements updated.
+
+### Fixed
+- Create: after moving the project folder, a creation's keyframes and
+  clips disappeared from the storyboard (the storyboard stores absolute
+  paths) and approving again regenerated them. They are now found by name
+  in the run's own `keyframes/` and `clips/`, and the paths are rewritten
+  before generating.
+- Media bin: a video tile showed its film icon at full size over the
+  thumbnail.
+
 ## Unreleased — one editor, no Gradio (2026-10-13)
 
 ### Added
@@ -30,9 +63,9 @@ public repository was prepared from.
   longer a dependency. `requirements.txt` now lists what the editor
   actually uses (`fastapi`, `uvicorn`, `python-multipart`; `httpx` for
   tests). Tests that covered `app.py` logic were moved to the services.
-- `Avvia_Editor.bat`: `Avvia_OpenVideoStudio.bat` now starts the editor
-  (port 7870) without ComfyUI; `Ferma_OpenVideoStudio.bat` stops port
-  7870 and 8188.
+- `Avvia_Editor.bat`. The launchers are now English-named:
+  `Start_OpenVideoStudio.bat` starts the editor (port 7870) without
+  ComfyUI; `Stop_OpenVideoStudio.bat` stops ports 7870 and 8188.
 
 ### Fixed
 - Narration failed with `403 … speech.platform.bing.com`: Edge TTS
