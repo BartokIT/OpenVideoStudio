@@ -290,7 +290,7 @@ per-clip.
 
 ## TRACK H — Documentation / Localization
 
-**Vision:** `README_CN.md` exists at launch; every other language is a
+**Vision:** the project ships in English; every other language is a
 community opportunity. Good documentation is as valuable a contribution as
 code here.
 

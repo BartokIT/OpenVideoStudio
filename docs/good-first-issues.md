@@ -60,8 +60,7 @@ plausible-sounding task is one this project can support as described:
 6. **Add a demo project** — a second `examples/` entry alongside
    `hero_demo/`, disclosed with the same honesty (see
    `examples/hero_demo/README.md` for the bar to match).
-7. **Improve or add a translation** — `README_CN.md` exists; other
-   languages don't yet. See the Documentation & Localization track in
+7. **Add a translation** — only English exists today. See the Documentation & Localization track in
    [`COMMUNITY_TRACKS.md`](COMMUNITY_TRACKS.md).
 8. **Suggest a small UI improvement** — the editor in `studio/web`
    (vanilla JS, no build step); a labeling, layout, or clarity fix is a

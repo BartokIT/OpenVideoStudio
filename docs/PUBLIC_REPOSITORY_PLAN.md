@@ -66,7 +66,6 @@ OpenVideoStudio/
 │   ├── PULL_REQUEST_TEMPLATE.md
 │   └── FUNDING.yml             # prepared, not activated
 ├── README.md
-├── README_CN.md
 ├── CONTRIBUTING.md
 ├── GOVERNANCE.md
 ├── ROADMAP.md

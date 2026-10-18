@@ -7,7 +7,7 @@ public repository was prepared from.
 ## Unreleased — English launchers, screenshots, licence review (2026-10-18)
 
 ### Added
-- README (English and Chinese): an "The editor" section with screenshots
+- README: an "The editor" section with screenshots
   of Remix and Create, taken with AI-generated sample media
   (`docs/images/`).
 - `NOTICE`: states that this is a modified fork and lists the bundled
@@ -27,6 +27,12 @@ public repository was prepared from.
   governed by Microsoft's terms; the licence section covers fonts, online
   music and model weights; stale "no timeline editor" / "67/67 tests"
   statements updated.
+
+### Removed
+- Chinese as a project language: `README_CN.md`, the Create language
+  choice (narration and subtitles are English) and the Chinese Edge TTS
+  voice, the Chinese launch channels in the launch docs; the InstantID
+  ComfyUI workflow's node titles are now the English defaults.
 
 ### Fixed
 - Create: after moving the project folder, a creation's keyframes and

@@ -76,7 +76,7 @@ this exact list got two of these wrong, caught in independent review; see
    a supporting line or as the hook for launch posts specifically (see
    below), not as the permanent README tagline.
 
-**What's actually shipped (`README.md`/`README_CN.md`'s real headline, as
+**What's actually shipped (`README.md`'s real headline, as
 of the license decision):** *"A local-first, Apache-2.0-licensed AI video
 creation studio."* with subhead *"From one prompt to a complete video —
 most of it never leaves your machine."* and an inline note, directly
@@ -128,10 +128,6 @@ than a strategy document.
 | Reddit (r/StableDiffusion, r/LocalLLaMA, r/opensource) | practitioners already running local AI models | subreddit-specific — lead with the technical stack for r/StableDiffusion (SDXL Lightning + LTX-Video + ComfyUI), lead with the local/self-hosted angle for r/LocalLLaMA (this audience will ask about the TTS network call unprompted if it isn't disclosed — disclose it) | short post, demo embedded, link to repo, explicit ask for feedback and contributors | 24-48h after HN, so there's already visible traction to point to | Separate posts per subreddit, not one crossposted |
 | X | broad tech audience, AI-interested | "I built a local-first AI video studio that runs on a 6GB RTX 3060 — looking for contributors" | thread: hook, embedded demo clip, 3-4 bullet differentiators, repo link, explicit "help wanted" call | Day 1, same day as HN | |
 | YouTube | broader/less technical, higher production-value expectation | a longer-form (2-4 min) walkthrough beyond the README's short demo | actual screen recording of a real run, narrated | Week 1, not launch day (needs more production time than the hero demo) | |
-| Bilibili | Chinese-speaking developer/creator audience | 我在一台 6GB 显存 RTX 3060 笔记本上做了一个本地优先的 AI 视频工作室，准备让全球开发者一起完善 | mirrors the YouTube video, Chinese narration/subtitles, links `README_CN.md` | Same week as YouTube | |
-| V2EX | Chinese technical community, high signal, low tolerance for hype | plain technical writeup, mirrors the HN framing | Same week | |
-| Zhihu | Chinese Q&A/long-form, good for explaining the "why" | longer explainer post, can afford more narrative than HN/V2EX | Week 1-2 | |
-| Juejin | Chinese developer community, more implementation-focused | technical deep-dive (architecture, provider abstraction) | Week 1-2 | |
 
 **Candidate English title** (for HN/X/Reddit): "I built a local-first AI
 video studio that runs on a 6GB RTX 3060 — looking for contributors."
@@ -140,12 +136,8 @@ video studio that runs on a 6GB RTX 3060 — looking for contributors."
 exists, and "runs locally" unqualified omits the default cloud TTS
 dependency. "Local-first" is accurate either way.)
 
-**Candidate Chinese title** (for Bilibili/V2EX/Zhihu): "我在一台 6GB 显存
-RTX 3060 笔记本上做了一个本地优先的 AI 视频工作室，准备让全球开发者一起
-完善。"（同样的修正：不再使用"开源"和"完全本地运行"这类未加限定的说法。）
-
-Both are honest (backed by `docs/HARDWARE.md` and `README.md`'s actual
-disclosures) and both lead with the contributor ask, not just "look what
+It is honest (backed by `docs/HARDWARE.md` and `README.md`'s actual
+disclosures) and leads with the contributor ask, not just "look what
 I built" — matching the actual goal (community, not just downloads).
 
 ## Human + AI development story

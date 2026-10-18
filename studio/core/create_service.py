@@ -37,7 +37,7 @@ ASPECTS = [
     svc._c("16:9", "16:9 landscape", "16:9", "768×448 — same pixel budget, not separately validated"),
     svc._c("1:1", "1:1 square", "1:1", "608×608 — not separately validated"),
 ]
-LANGUAGES = [svc._c("en", "English", "EN"), svc._c("zh", "Chinese", "中文")]
+LANGUAGES = [svc._c("en", "English", "EN")]
 GEN_STAGES = ["keyframes", "clips", "narration", "subtitles", "edit"]
 STAGE_LABELS = {"script": "Script", "storyboard": "Storyboard", "keyframes": "Keyframes", "clips": "Video clips",
                 "narration": "Narration", "subtitles": "Subtitles", "edit": "Final edit"}

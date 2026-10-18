@@ -42,5 +42,5 @@ when filing a real issue — it's guidance, not part of the template):
 - Test model/hardware compatibility (report results against
   `docs/HARDWARE.md`)
 - Improve the installation guide (`docs/INSTALL.md`)
-- Add or improve a translation (`README_CN.md`, or a new language)
+- Add a translation of `README.md` into a new language
 - Small UI improvement (labels, layout, error messages in `studio/web`)

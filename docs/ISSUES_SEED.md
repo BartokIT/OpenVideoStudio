@@ -46,7 +46,7 @@ Expected result, Acceptance criteria, How to test.
 
 ### 3. [Docs] Translate README to a new language
 **Labels:** `good first issue`, `documentation`
-**Problem:** Only English (`README.md`) and Chinese (`README_CN.md`) exist at launch.
+**Problem:** Only English (`README.md`) exists.
 **Why it matters:** Broadens the contributor/user base; explicitly called out as a Track H opportunity.
 **Relevant files:** `README.md` (source), new `README_<LANG>.md`
 **Expected result:** A complete, accurate translation — not machine-translated without review — linked from the top of `README.md`'s language switcher.

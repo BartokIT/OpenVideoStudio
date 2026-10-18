@@ -13,13 +13,11 @@ export async function initCreate(ctx) {
   const cat = C.catalog;
   $('#cAspect').replaceChildren(...cat.aspects.map((a) =>
     h('button', { type: 'button', 'data-v': a.value, title: a.hint, class: a.value === cat.defaults.aspect ? 'on' : '' }, a.label)));
-  $('#cLanguage').replaceChildren(...cat.languages.map((l) =>
-    h('button', { type: 'button', 'data-v': l.value, class: l.value === cat.defaults.language ? 'on' : '' }, l.label)));
   $('#cDuration').value = cat.defaults.duration;
   $('#cStyle').value = cat.defaults.style;
   $('#cModel').textContent = `Script and storyboard by ${cat.llm_model} (Ollama, local). Narration uses Edge TTS (online).`;
   showAspectHint();
-  for (const id of ['#cAspect', '#cLanguage']) {
+  for (const id of ['#cAspect']) {
     $(id).addEventListener('click', (e) => {
       const b = e.target.closest('button');
       if (!b) return;
@@ -83,7 +81,7 @@ async function refreshServices() {
 function summary() {
   if (!C.run) { C.ctx.setSummary('Create · describe a video to start'); $('#createTitle').textContent = 'New AI video'; $('#createLabel').textContent = ''; return; }
   const r = C.run;
-  C.ctx.setSummary(`Create · ${r.scenes.length} scenes · ${fmtShort(r.total)} · ${r.aspect} · ${r.language.toUpperCase()}`);
+  C.ctx.setSummary(`Create · ${r.scenes.length} scenes · ${fmtShort(r.total)} · ${r.aspect}`);
   $('#createTitle').textContent = r.title || r.prompt.slice(0, 60);
   $('#createLabel').textContent = r.run_id;
 }
@@ -96,7 +94,7 @@ async function write() {
   try {
     const id = await C.ctx.job(post('/api/create', {
       prompt, duration: parseFloat($('#cDuration').value) || 15, aspect: $('#cAspect .on')?.dataset.v || '9:16',
-      style: $('#cStyle').value, language: $('#cLanguage .on')?.dataset.v || 'en', music_preset: $('#cMusic').value || null,
+      style: $('#cStyle').value, language: 'en', music_preset: $('#cMusic').value || null,
     }), 'Writing the script', { onProgress: () => {} });
     await load(id);
     toast('Storyboard ready. Review and edit the scenes, then approve.', 'ok');

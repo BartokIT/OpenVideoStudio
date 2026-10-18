@@ -26,7 +26,7 @@ https://youtu.be/8VCze8sYlVg
 **A local-first, Apache-2.0-licensed AI video creation studio.**
 From one prompt to a complete video — most of it never leaves your machine.
 
-[中文](README_CN.md) · [Install](docs/INSTALL.md) · [Architecture](docs/architecture.md) · [Roadmap](ROADMAP.md) · [Contributing](CONTRIBUTING.md) · [Discussions](../../discussions)
+[Install](docs/INSTALL.md) · [Architecture](docs/architecture.md) · [Roadmap](ROADMAP.md) · [Contributing](CONTRIBUTING.md) · [Discussions](../../discussions)
 
 ### In one look
 

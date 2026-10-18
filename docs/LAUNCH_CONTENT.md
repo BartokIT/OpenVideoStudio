@@ -12,8 +12,7 @@ separate hosted demo site; the demo is the GIF/video in `README.md` and
 
 Recommended posting order (detail in `docs/LAUNCH_72H_PLAN.md`):
 **GitHub (anchor, hour 0) → Hacker News + X (day 1) → Reddit (24–48h
-after HN, once there's visible traction to point to) → YouTube (week 1)
-→ Bilibili + V2EX (same week as YouTube) → Zhihu + Juejin (week 1–2).**
+after HN, once there's visible traction to point to) → YouTube (week 1).**
 
 ---
 
@@ -254,146 +253,26 @@ production time than the README's short hero demo.
 
 ---
 
-## 6. Bilibili
-
-**标题:** 我做了一个本地优先的开源 AI 视频工作室（6GB 显存笔记本可跑）
-
-**开头段落:**
-
-> OpenVideoStudio 把一句提示词变成一部完整的视频：剧本、分镜、角色/场景
-> 一致性设定、AI 生成关键帧和视频片段、配音、字幕，全部自动完成。这期视频
-> 展示了一次真实的完整生成过程，就在项目开发和测试所用的同一台 6GB 显存
-> 笔记本显卡上跑的。整个项目是我一个人做出来的——持续为每次生成付费做实验
-> 对我来说不现实，所以干脆把这套工作流自己搭出来，而不是靠买更多算力解决
-> 问题。项目开源（Apache-2.0 协议），正在寻找贡献者——链接和时间戳见简介。
-
-**Short version:** "一个人在 6GB 显存笔记本上做出来的开源 AI 视频工作流，
-不是靠算力堆出来的，而是被'没有无限预算'这个限制逼出来的设计。剧本、分镜、
-关键帧、视频片段都在本地生成完成；唯一的例外是默认配音走的是云端的
-Edge TTS，仓库里写清楚了。"
-
-**CTA:** "完整安装指南和源码：https://github.com/mne03005-png/OpenVideoStudio"
-
-**Timing:** same week as the YouTube video — mirrors it with Chinese
-narration/subtitles, links `README_CN.md`.
-
----
-
-## 7. V2EX
-
-**标题:** 开源了一个本地优先的 AI 视频生成工具，6GB 显存笔记本可跑完整流程
-
-**开头段落（偏技术、低废话，匹配 V2EX 的技术社区调性）:**
-
-> 做了几个月，今天开源。一个人在 6GB 显存笔记本（RTX 3060）上做的，没有
-> 额外算力预算，能不能在现有硬件上把整条流程跑通，是最早的出发点。核心
-> 流程：提示词 → LLM 生成剧本和分镜（Ollama）→
-> 生成一次性的角色/场景一致性设定 → SDXL Lightning 生成关键帧 → LTX-Video
-> 生成视频片段 → Edge TTS 配音 → 字幕 → FFmpeg 自动剪辑合成。剧本、分镜、
-> 关键帧、视频片段这几步全部在本地跑，6GB 显存笔记本卡（RTX 3060）验证
-> 通过；配音目前默认走的是 Edge TTS，是唯一会联网的一步，没有藏着不说。
-> 具体哪些硬件配置测试过、哪些只是预期可行，`docs/HARDWARE.md` 里如实写
-> 清楚了，没有夸大的硬件宣传。Provider 层（LLM/图像/视频/语音）是可替换
-> 接口，配置驱动，不是写死在 pipeline 代码里——这点有测试验证，不是嘴上
-> 说说。
-
-**Short version:** "本地优先的 AI 视频生成流水线，6GB 显存笔记本验证通过，
-Apache-2.0 开源，欢迎贡献。"
-
-**CTA:** "仓库地址：https://github.com/mne03005-png/OpenVideoStudio"
-
-**Timing:** same week as HN/day 1 posts.
-
----
-
-## 8. Zhihu
-
-**标题:** 我用几个月业余时间做了一个开源 AI 视频生成工具，聊聊技术选型和踩过的坑
-
-**开头段落（更长的叙事空间，适合讲"为什么"）:**
-
-> 先说说为什么做这个。我没有什么昂贵的 GPU，也没有充裕的 AI 预算——手头
-> 就是一台 RTX 3060 6GB 显存的笔记本。现在市面上有不少效果惊艳的 AI 视频
-> 工具，但每一次生成、每一次失败重试都是真金白银的成本，持续花钱去做实验
-> 对我来说不现实，而且我的硬件本身也算不上强。与其靠"多买算力"解决问题，
-> 我就干脆把这套工作流自己搭出来：先解决"能不能在我现有这台机器上把整条
-> 流程真正跑通"这个问题。
->
-> 这篇文章聊聊 OpenVideoStudio 这个项目——一个把提示词自动变成完整视频的
-> 开源流水线，以及做的过程中踩过的一些坑：比如角色一致性问题最早是靠 LLM
-> 每个分镜重新描述角色外貌来维持的，实际效果会随着分镜数量增多而漂移，后来
-> 改成用一次独立的 LLM 调用生成结构化的角色/场景设定，用代码而不是 LLM 来
-> 保证每个分镜拿到的描述文本完全一致，这个改动明显改善了角色一致性——但没
-> 有完全解决：即使每个分镜拿到的文字描述完全一样，SDXL Lightning 在低步数
-> 下也不总能把相同的文字变成视觉上同一张脸，这一点在项目自带的 demo 里就
-> 如实展示了出来，也是角色一致性还需要继续打磨的地方。再比如 6GB 显存下
-> 如何避免 Ollama、SDXL、LTX-Video 同时占用显存导致 OOM……
->
-> 项目现在还远谈不上完成——角色一致性还需要改进、更多 provider 待接入、
-> 编辑器还只是设计稿、Linux/macOS 支持也还不够好。与其一个人关起门来慢慢
-> 磨，不如现在开放出来，让更多和我一样没有无限 GPU、没有无限 API 预算的
-> 开发者、创作者一起参与进来。
-
-**Short version:** "一个人在 6GB 显存笔记本上做的开源 AI 视频生成工具，
-聊聊技术选型和踩坑记录，包括角色一致性和显存调度问题，以及为什么现在选择
-把它开放出来。"
-
-**CTA:** "项目地址：https://github.com/mne03005-png/OpenVideoStudio，欢迎讨论和贡献——希望有一天 Contributors
-页面上不只有我一个名字。"
-
-**Timing:** week 1–2, can follow the initial launch wave once there's
-something to reference back to.
-
----
-
-## 9. Juejin
-
-**标题:** 开源项目实战：如何设计一个可扩展的 AI 视频生成 Provider 架构
-
-**开头段落（偏实现细节，符合 Juejin 的开发者受众）:**
-
-> 这篇讲讲 OpenVideoStudio 里 Provider 抽象层的设计：LLMProvider /
-> ImageProvider / VideoProvider / TTSProvider 四个接口，新增一个 provider
-> 只需要写一个新文件加 registry.py 里两行注册，pipeline 代码本身不用改。
-> 具体使用哪个 provider 完全由 config.toml 驱动，这一点专门写了测试验证——
-> 早期版本这里其实是写死在代码里的，被独立审查发现后改成了配置驱动。
->
-> Provider 抽象是我一个人在 6GB 显存笔记本上做这个项目时，为了不把自己
-> 逼死在硬编码里而定下的设计原则，现在开源出来也是希望有更多人一起把这层
-> 接口做完整。
-
-**Short version:** "AI 视频生成项目的 Provider 抽象层设计实战，配置驱动而非
-硬编码的具体实现方式。"
-
-**CTA:** "完整实现见仓库：https://github.com/mne03005-png/OpenVideoStudio"
-
-**Timing:** week 1–2, alongside Zhihu.
-
----
-
 ## Cross-channel consistency check
 
 Every title and opening paragraph above was written or reviewed against
 the same bar `README.md`'s headline was held to: no unqualified "runs
-locally" / "fully local" / 全部在本地 claim stands without the Edge TTS
+locally" / "fully local" claim stands without the Edge TTS
 cloud-call caveat nearby (an earlier draft of this file missed this in
 several short-form spots — the YouTube title, the HN and X short/single-
-post versions, the Bilibili short version, and a direct
-self-contradiction in the V2EX opening paragraph that named Edge TTS and
-then said "全部在本地跑" in the same breath — all fixed; "local-first" /
-本地优先 titles that don't claim totality were left as-is, since that
+post versions — all fixed; "local-first" titles that don't claim totality were left as-is, since that
 phrasing is already accurate without a caveat). No unqualified "open
 source" ahead of the Apache-2.0 license actually being in place (it now
 is — see `docs/LICENSE_STRATEGY.md`), and no hardware claim beyond what
 `docs/HARDWARE.md` actually verifies. This check is a description of what
 was done, not a standing guarantee — re-run your own scan for "local" /
-"cloud" / "offline" / 本地 / 云端 / 离线 across this file before actually
+"cloud" / "offline" across this file before actually
 posting anything, since it's easy for a future edit to reintroduce the
 same gap.
 
 A founder-story pass was added after the above (6GB RTX 3060 laptop,
 built without a large AI budget, opening it up rather than building it
-alone) across every channel and `README.md`/`README_CN.md`. It was held
+alone) across every channel and `README.md`. It was held
 to the same rules the rest of this file is: "local-first," not "fully
 local"; the 6GB RTX 3060 claim used only because `docs/HARDWARE.md`
 actually verifies it; no claim that character consistency is solved; no

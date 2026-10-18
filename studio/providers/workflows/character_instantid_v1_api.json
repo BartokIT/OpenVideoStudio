@@ -26,7 +26,7 @@
     },
     "class_type": "KSampler",
     "_meta": {
-      "title": "K采样器"
+      "title": "KSampler"
     }
   },
   "4": {
@@ -35,7 +35,7 @@
     },
     "class_type": "CheckpointLoaderSimple",
     "_meta": {
-      "title": "Checkpoint加载器（简易）"
+      "title": "Load Checkpoint"
     }
   },
   "5": {
@@ -46,7 +46,7 @@
     },
     "class_type": "EmptyLatentImage",
     "_meta": {
-      "title": "空Latent图像"
+      "title": "Empty Latent Image"
     }
   },
   "8": {
@@ -62,7 +62,7 @@
     },
     "class_type": "VAEDecode",
     "_meta": {
-      "title": "VAE解码"
+      "title": "VAE Decode"
     }
   },
   "11": {
@@ -80,7 +80,7 @@
     },
     "class_type": "LoadImage",
     "_meta": {
-      "title": "加载图像"
+      "title": "Load Image"
     }
   },
   "15": {
@@ -92,7 +92,7 @@
     },
     "class_type": "PreviewImage",
     "_meta": {
-      "title": "预览图像"
+      "title": "Preview Image"
     }
   },
   "16": {
@@ -101,7 +101,7 @@
     },
     "class_type": "ControlNetLoader",
     "_meta": {
-      "title": "加载ControlNet模型"
+      "title": "Load ControlNet Model"
     }
   },
   "38": {
@@ -123,7 +123,7 @@
     },
     "class_type": "CLIPTextEncode",
     "_meta": {
-      "title": "CLIP文本编码"
+      "title": "CLIP Text Encode (Prompt)"
     }
   },
   "40": {
@@ -136,7 +136,7 @@
     },
     "class_type": "CLIPTextEncode",
     "_meta": {
-      "title": "CLIP文本编码"
+      "title": "CLIP Text Encode (Prompt)"
     }
   },
   "60": {
