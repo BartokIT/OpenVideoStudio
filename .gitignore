@@ -47,3 +47,17 @@ Thumbs.db
 studio/identity_image_test/
 studio/mara_bible/
 *_bible/
+*.task
+
+# Local user data — never published: saved projects, generated/downloaded
+# music, personal demo renders and local backups
+studio/projects/
+studio/assets/music/generated/
+studio/assets/music/downloads/
+studio/assets/music/*.mp3
+studio/assets/music/*.m4a
+studio/assets/music/*.wav
+studio/assets/music/*.ogg
+studio/assets/music/*.flac
+demo_pro/
+_backup_pre_pro_*/

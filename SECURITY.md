@@ -24,8 +24,10 @@ security surface includes:
 - Anything that could execute unintended commands (this project shells
   out to FFmpeg — command construction matters)
 - Credential handling for any configured cloud provider (`.env` values)
-- Anything that could make the local Gradio UI (`app.py`) reachable or
-  exploitable beyond its intended localhost use
+- Anything that could make the local editor server (`studio/server`,
+  bound to 127.0.0.1) reachable or exploitable beyond its intended
+  localhost use — including its `/files` route, which must only serve
+  from the runs folder and the music library
 
 Out of scope: vulnerabilities in third-party dependencies (Ollama,
 ComfyUI, FFmpeg, model weights themselves) — please report those to their

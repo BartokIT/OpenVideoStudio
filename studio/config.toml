@@ -1,3 +1,4 @@
+# Modified in 2026 in the BartokIT/OpenVideoStudio fork - see NOTICE and CHANGELOG.md.
 # OpenVideoStudio configuration
 
 [output]
@@ -62,11 +63,20 @@ original_volume = 1.0
 bgm_volume = 0.25             # carried over from an earlier private prototype
 fade_seconds = 2.0
 amix_dropout_transition = 3   # carried over from an earlier private prototype
+duck = true                   # music dips automatically under clip sound / narration
+loudnorm = true               # normalise the final mix to -16 LUFS
+
+[pro]
+# Media Remix render engine: "pro" = core/pro frame compositor (looks,
+# animated titles, 20 transitions, face morph); "legacy" = V1 FFmpeg chains.
+engine = "pro"
+workers = 0                   # parallel render workers, 0 = auto (max 6: NVENC session limit)
+cq = 21                       # NVENC constant quality, lower = better/larger
 
 [ui]
 theme = "soft"
 default_style = "Family Memory"
-styles = ["Family Memory", "Travel Documentary"]
+styles = ["Family Memory", "Travel Documentary"]   # legacy list; the UI now reads core/pro/looks.py
 
 [providers]
 # V0.1: Ollama chosen specifically so the first runnable version of

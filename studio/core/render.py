@@ -1,3 +1,4 @@
+# Modified in 2026 in the BartokIT/OpenVideoStudio fork - see NOTICE and CHANGELOG.md.
 """FFmpeg/NVENC render pipeline.
 
 Reused, proven parameters, each carried over from a specific earlier
@@ -57,6 +58,11 @@ class RenderConfig:
     zoom_increment: float = 0.0008
     zoom_max: float = 1.12
     pan_px_per_frame: int = 2
+    # "pro" = frame compositor in core/pro (looks, animated titles,
+    # transitions, face morph); "legacy" = the V1 per-shot FFmpeg chains.
+    engine: str = "pro"
+    workers: int = 0          # pro engine parallel chunk workers, 0 = auto
+    cq: int = 19              # NVENC constant-quality target (lower = better)
 
     @classmethod
     def from_toml(cls, path: Path) -> "RenderConfig":
@@ -66,7 +72,9 @@ class RenderConfig:
         enc = data.get("encode", {})
         kb = data.get("kenburns", {})
         crop = data.get("crop", {})
+        pro = data.get("pro", {})
         return cls(
+            engine=pro.get("engine", "pro"), workers=pro.get("workers", 0), cq=pro.get("cq", 19),
             width=out.get("width", 1920), height=out.get("height", 1080), fps=out.get("fps", 25),
             codec=enc.get("codec", "h264_nvenc"), preset=enc.get("preset", "p5"),
             pix_fmt=enc.get("pix_fmt", "yuv420p"), bitrate=enc.get("bitrate", "10M"),
@@ -114,7 +122,10 @@ def smart_crop_image(src: Path, out: Path, cfg: RenderConfig, face_bbox: Optiona
                 top = (h - new_h) // 2
             box = (0, top, w, top + new_h)
 
-        cropped = im.crop(box).convert("RGB").resize((cfg.width, cfg.height))
+        # Keep 2x the output resolution so zoompan has sub-pixel headroom:
+        # cropping to exactly the output size makes Ken Burns motion step
+        # in whole-pixel jumps (visible jitter).
+        cropped = im.crop(box).convert("RGB").resize((cfg.width * 2, cfg.height * 2), Image.LANCZOS)
         cropped.save(out, quality=cfg.jpeg_quality)
 
 
@@ -133,26 +144,36 @@ def kenburns_filter(mode: str, duration: float, cfg: RenderConfig) -> str:
     (zoom_in, and zoom_out/pan_left/pan_right), duration parameterized
     instead of those prototypes' fixed 5s/6s."""
     frames = max(int(round(duration * cfg.fps)), 1)
-    z_inc, z_max, pan = cfg.zoom_increment, cfg.zoom_max, cfg.pan_px_per_frame
+    z_max = cfg.zoom_max
+
+    # Motion is a function of the output frame number (on) with smoothstep
+    # easing, spanning the whole shot. The old per-frame increments
+    # (zoom_increment / pan_px_per_frame) hit their limits mid-shot and
+    # froze — e.g. a 2px/frame pan at zoom 1.08 ran out of room after ~2.8s.
+    p = f"(on/{max(frames - 1, 1)})"
+    ease = f"({p}*{p}*(3-2*{p}))"
+    center_x = "(iw-iw/zoom)/2"
+    center_y = "(ih-ih/zoom)/2"
 
     if mode == "zoom_out":
-        zoom = f"if(lte(zoom,1.0),{z_max},zoom-{z_inc})"
-        x = "iw/2-(iw/zoom/2)"
-        y = "ih/2-(ih/zoom/2)"
+        zoom = f"{z_max}-({z_max}-1)*{ease}"
+        x, y = center_x, center_y
     elif mode == "pan_left":
-        zoom = "1.08"
-        x = f"iw/2-(iw/zoom/2)+on*{pan}"
-        y = "ih/2-(ih/zoom/2)"
+        zoom = str(z_max)
+        x, y = f"(iw-iw/zoom)*{ease}", center_y
     elif mode == "pan_right":
-        zoom = "1.08"
-        x = f"iw/2-(iw/zoom/2)-on*{pan}"
-        y = "ih/2-(ih/zoom/2)"
+        zoom = str(z_max)
+        x, y = f"(iw-iw/zoom)*(1-{ease})", center_y
     else:  # zoom_in, default
-        zoom = f"min(zoom+{z_inc},{z_max})"
-        x = "iw/2-(iw/zoom/2)"
-        y = "ih/2-(ih/zoom/2)"
+        zoom = f"1+({z_max}-1)*{ease}"
+        x, y = center_x, center_y
 
-    return f"zoompan=z='{zoom}':x='{x}':y='{y}':d={frames}:s={cfg.width}x{cfg.height}:fps={cfg.fps}"
+    # zoompan crops on whole input pixels; upscaling first (the crop image
+    # is already 2x output) makes each step a fraction of an output pixel.
+    return (
+        f"scale={cfg.width * 4}:{cfg.height * 4}:flags=lanczos,"
+        f"zoompan=z='{zoom}':x='{x}':y='{y}':d={frames}:s={cfg.width}x{cfg.height}:fps={cfg.fps}"
+    )
 
 
 _KB_MODES = ["zoom_in", "zoom_out", "pan_left", "pan_right"]
@@ -181,7 +202,7 @@ def render_photo_shot(shot: dict, index: int, work_dir: Path, cfg: RenderConfig,
         vf += "," + _drawtext_filter(shot["title_text"], cfg)
 
     cmd = [
-        "ffmpeg", "-y", "-loop", "1", "-i", str(cropped),
+        "ffmpeg", "-y", "-i", str(cropped),
         "-f", "lavfi", "-t", str(shot["duration"]),
         "-i", f"anullsrc=channel_layout=stereo:sample_rate={cfg.audio_samplerate}",
         "-t", str(shot["duration"]),
@@ -261,12 +282,82 @@ def concat_clips(clip_paths: list[Path], work_dir: Path, out_path: Path, cfg: Re
     return _run(cmd)
 
 
+def _clip_duration(path: Path) -> float:
+    proc = subprocess.run(
+        ["ffprobe", "-v", "error", "-show_entries", "format=duration", "-of", "csv=p=0", str(path)],
+        capture_output=True, text=True, encoding="utf-8", errors="replace",
+    )
+    try:
+        return float(proc.stdout.strip())
+    except ValueError:
+        return 0.0
+
+
+def crossfade_clips(clip_paths: list[Path], work_dir: Path, out_path: Path, cfg: RenderConfig,
+                    fade_seconds: float = 0.8) -> tuple[bool, str]:
+    """Like concat_clips, but with a video crossfade + audio crossfade
+    between consecutive clips instead of hard cuts. Media Remix only: the
+    AI Creation pipeline keeps concat_clips because its subtitle timing
+    assumes clips butt together with no overlap. Each fade shortens the
+    total by fade_seconds; it is clamped to a third of the shorter clip of
+    each pair so short shots stay mostly visible."""
+    if len(clip_paths) < 2:
+        return concat_clips(clip_paths, work_dir, out_path, cfg)
+
+    durations = [_clip_duration(p) for p in clip_paths]
+    graph = []
+    for i in range(len(clip_paths)):
+        graph.append(f"[{i}:v]fps={cfg.fps},scale={cfg.width}:{cfg.height},setsar=1,format=yuv420p,settb=AVTB[v{i}]")
+        graph.append(f"[{i}:a]aformat=sample_rates={cfg.audio_samplerate}:channel_layouts=stereo[a{i}]")
+
+    v_prev, a_prev, elapsed = "v0", "a0", durations[0]
+    for i in range(1, len(clip_paths)):
+        fade = max(min(fade_seconds, durations[i - 1] / 3, durations[i] / 3), 0.04)
+        offset = elapsed - fade
+        graph.append(f"[{v_prev}][v{i}]xfade=transition=fade:duration={fade:.3f}:offset={offset:.3f}[vx{i}]")
+        graph.append(f"[{a_prev}][a{i}]acrossfade=d={fade:.3f}[ax{i}]")
+        v_prev, a_prev = f"vx{i}", f"ax{i}"
+        elapsed = offset + durations[i]
+
+    # Written to a file: a long slideshow's graph can exceed Windows'
+    # command-line length limit.
+    graph_file = work_dir / "crossfade_graph.txt"
+    graph_file.write_text(";\n".join(graph), encoding="utf-8")
+
+    cmd = ["ffmpeg", "-y"]
+    for p in clip_paths:
+        cmd += ["-i", str(p)]
+    cmd += [
+        "-/filter_complex", str(graph_file),
+        "-map", f"[{v_prev}]", "-map", f"[{a_prev}]",
+        "-c:v", cfg.codec, "-preset", cfg.preset, "-b:v", cfg.bitrate,
+        "-maxrate", cfg.maxrate, "-bufsize", cfg.bufsize, "-pix_fmt", cfg.pix_fmt,
+        "-c:a", cfg.audio_codec, "-b:a", cfg.audio_bitrate, "-ar", str(cfg.audio_samplerate), "-ac", str(cfg.audio_channels),
+    ]
+    if cfg.faststart:
+        cmd += ["-movflags", "+faststart"]
+    cmd.append(str(out_path))
+
+    return _run(cmd)
+
+
 def render_plan(plan_path: Path, work_dir: Path, output_path: Path, cfg: Optional[RenderConfig] = None,
-                 render_json_path: Optional[Path] = None) -> dict:
+                 render_json_path: Optional[Path] = None, options: Optional[dict] = None,
+                 progress=None, preview_seconds: Optional[float] = None) -> dict:
     cfg = cfg or RenderConfig()
     plan = json.loads(Path(plan_path).read_text(encoding="utf-8"))
     work_dir = Path(work_dir)
     work_dir.mkdir(parents=True, exist_ok=True)
+
+    if cfg.engine == "pro":
+        from pro import engine as pro_engine
+        result = pro_engine.render(plan, work_dir, Path(output_path), cfg, options, progress, preview_seconds)
+        result["plan_path"] = str(Path(plan_path).resolve())
+        if render_json_path:
+            render_json_path = Path(render_json_path)
+            render_json_path.parent.mkdir(parents=True, exist_ok=True)
+            render_json_path.write_text(json.dumps(result, ensure_ascii=False, indent=2), encoding="utf-8")
+        return result
 
     enabled_shots = [s for s in plan["shots"] if s["enabled"]]
     detector = load_face_detector()
@@ -299,7 +390,7 @@ def render_plan(plan_path: Path, work_dir: Path, output_path: Path, cfg: Optiona
     if clip_paths:
         output_path = Path(output_path)
         output_path.parent.mkdir(parents=True, exist_ok=True)
-        final_ok, final_log = concat_clips(clip_paths, work_dir, output_path, cfg)
+        final_ok, final_log = crossfade_clips(clip_paths, work_dir, output_path, cfg)
         steps.append({
             "shot_id": "__final_concat__", "output": str(output_path),
             "status": "ok" if final_ok else "failed", "error": None if final_ok else final_log,

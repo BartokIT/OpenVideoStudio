@@ -32,8 +32,8 @@ and where you're expected to intervene. For the component-level view, see
 
 ### Step-by-step detail
 
-1. **Prompt.** One sentence to a short paragraph, entered in the Gradio
-   UI's AI Creation tab, along with target duration, aspect ratio (9:16
+1. **Prompt.** One sentence to a short paragraph, entered in the editor's
+   Create workspace, along with target duration, aspect ratio (9:16
    tested; 16:9/1:1 implemented but not separately validated — see
    `HARDWARE.md`), style, and language.
 2. **Script.** `creative/script.py` calls the configured `LLMProvider`
@@ -48,10 +48,11 @@ and where you're expected to intervene. For the component-level view, see
    character(s) and setting, formatted deterministically, then injects it
    verbatim into every scene's image prompt — see `architecture.md` for
    why this is a prompt-engineering technique, not a memory system.
-5. **Review gate.** The storyboard (including the identity text) is shown
-   in an editable table. You can edit any field — prompts, narration,
-   duration — reorder or disable scenes, before anything touches the GPU.
-   Nothing generates past this point without your explicit approval.
+5. **Review gate.** The storyboard is shown as one editable card per
+   scene: image prompt, camera/motion prompt, narration and duration
+   (3–6 s, clamped on approval). Nothing touches the GPU until you click
+   **Approve and generate**; ComfyUI is started at that point if it isn't
+   running.
    This is a deliberate cost/safety checkpoint: image and video generation
    is the expensive part, and re-running it because of a typo in the
    script is wasted GPU time.
@@ -96,26 +97,26 @@ A fully local/offline TTS provider doesn't ship yet — see
 Every scene's keyframe and clip is checkpointed to disk. If a run fails
 partway (GPU OOM, a crashed provider, closing the app), rerunning the
 same run resumes from the first missing artifact rather than starting
-over. Targeted regeneration of a single scene is possible today by
-clearing that scene's artifact path and rerunning with `force=True` —
-there's no UI button for this yet (tracked in
-[`COMMUNITY_TRACKS.md`](COMMUNITY_TRACKS.md) Track F).
+over. Regenerating a single scene works from the editor: change its
+image prompt (or its motion prompt / narration) after a generation and
+approve again — only that scene's keyframe and clip (or narration) are
+made again, the others are reused, and the final edit is redone.
 
 ## Pro Mode — PLANNED, not built
 
 A guided UI over character design, environment design, and keyframe
-review as their own distinct steps, plus a real timeline editor, is on
-[`../ROADMAP.md`](../ROADMAP.md) but does not exist today. The underlying
-pipeline stages above already exist; the guided step-by-step UI layer
-over them does not. Don't rely on documentation or marketing describing
-Pro Mode as available — if it isn't in this file's Quick Mode walkthrough
-above, it isn't shipping yet.
+review as their own distinct steps is on [`../ROADMAP.md`](../ROADMAP.md)
+but does not exist today. The underlying pipeline stages above already
+exist; the guided step-by-step UI layer over them does not. Don't rely on
+documentation or marketing describing Pro Mode as available — if it
+isn't in this file's walkthrough above, it isn't shipping yet.
 
-## Media Remix (a separate, secondary workflow)
+## Remix (a separate workflow for your own media)
 
-Not part of the AI Creation pipeline above. Media Remix takes your own
-existing photos/videos and produces an edited montage, using the same
-FFmpeg/audio/scoring core (`core/`) as the AI Creation pipeline's final
-assembly step, but with no AI generation involved — it's a personal-media
-editing tool, not a text-to-video pipeline. See the second tab in the
-Gradio UI.
+Not part of the AI pipeline above. The editor's Remix workspace takes your
+own photos/videos and produces an edited film, using the same
+FFmpeg/audio/scoring core (`core/`) as the AI pipeline's final assembly
+step, with no AI generation involved: an automatic plan (order,
+durations, chapters from folders and dates), then a monitor, a timeline
+with transitions and text cards, looks, music cut to the beat, projects
+and background renders.

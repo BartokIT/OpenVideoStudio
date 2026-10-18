@@ -22,7 +22,6 @@ from providers.base import TTSResult
 
 _DEFAULT_VOICES = {
     "en": "en-US-AriaNeural",
-    "zh": "zh-CN-XiaoxiaoNeural",
 }
 
 

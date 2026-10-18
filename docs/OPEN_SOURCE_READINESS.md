@@ -28,9 +28,9 @@ here, since this document has previously gone stale between updates.
 - [x] License selected — **Apache-2.0 + DCO**, see
       `docs/LICENSE_STRATEGY.md`. `LICENSE` (verbatim canonical text,
       fetched directly rather than reproduced from memory) and `NOTICE`
-      are both in the repository root. README/README_CN updated to
+      are both in the repository root. README updated to
       reflect the decision.
-- [x] README/README_CN ready (draft) — headline, local-by-default
+- [x] README ready (draft) — headline, local-by-default
       disclosure, provider-selection claim, Quick Mode description, and
       License section all verified against actual current code behavior,
       not just written and assumed correct. Still drafts pending the hero

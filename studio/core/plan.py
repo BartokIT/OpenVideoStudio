@@ -1,3 +1,4 @@
+# Modified in 2026 in the BartokIT/OpenVideoStudio fork - see NOTICE and CHANGELOG.md.
 """Deterministic, rule-based edit planning. No LLM, no semantic model.
 
 An earlier private prototype never varied shot duration by content
@@ -8,6 +9,7 @@ run. Variable duration-by-score is new logic for this project.
 from __future__ import annotations
 
 import json
+import re
 from dataclasses import dataclass
 from datetime import datetime
 from pathlib import Path
@@ -28,6 +30,27 @@ class PlanConfig:
     high_score_threshold: float = 80.0
     low_score_threshold: float = 50.0
     strong_face_ratio: float = 0.05
+    # "date": chronological by EXIF/video/mtime timestamp, chapters split
+    # on time gaps. "folder": follow the folder tree (natural sort, so
+    # "2-x" < "10-x"), filename order inside each folder, one chapter per
+    # folder — for scans/archives whose timestamps are meaningless.
+    sort_mode: str = "date"
+
+
+def _natural_key(text: str) -> list:
+    return [int(part) if part.isdigit() else part.casefold() for part in re.split(r"(\d+)", text)]
+
+
+def _folder_sort_key(asset: dict) -> list:
+    parts = asset.get("relative_path", Path(asset["path"]).name).split("/")
+    # Folders before filename, each naturally sorted; a file sitting directly
+    # in the root sorts ahead of every subfolder.
+    return [_natural_key(p) for p in parts[:-1]] + [[], _natural_key(parts[-1])]
+
+
+def _folder_of(asset: dict) -> str:
+    rel = asset.get("relative_path", "")
+    return rel.rsplit("/", 1)[0] if "/" in rel else ""
 
 
 def _base_duration(asset: dict, cfg: PlanConfig) -> tuple[float, str]:
@@ -110,8 +133,19 @@ def build_plan(scored_assets_path: Path, cfg: Optional[PlanConfig] = None) -> di
     payload = json.loads(Path(scored_assets_path).read_text(encoding="utf-8"))
     assets = [a for a in payload["assets"] if not a.get("error") and not a.get("score_error")]
 
-    assign_temporal_clusters(assets, cfg.chapter_gap_hours * 60.0, field="chapter_id")
-    assets.sort(key=lambda a: a["timestamp"])
+    chapter_names: dict[int, str] = {}
+    if cfg.sort_mode == "folder":
+        assets.sort(key=_folder_sort_key)
+        folder_ids: dict[str, int] = {}
+        for a in assets:
+            folder = _folder_of(a)
+            if folder not in folder_ids:
+                folder_ids[folder] = len(folder_ids)
+                chapter_names[folder_ids[folder]] = folder.split("/")[-1] if folder else "(root)"
+            a["chapter_id"] = folder_ids[folder]
+    else:
+        assign_temporal_clusters(assets, cfg.chapter_gap_hours * 60.0, field="chapter_id")
+        assets.sort(key=lambda a: a["timestamp"])
 
     shots = []
     for order, asset in enumerate(assets):
@@ -123,6 +157,7 @@ def build_plan(scored_assets_path: Path, cfg: Optional[PlanConfig] = None) -> di
             "shot_id": f"s_{order:04d}",
             "asset_id": asset["id"],
             "asset_path": asset["path"],
+            "relative_path": asset.get("relative_path", Path(asset["path"]).name),
             "type": asset["type"],
             "chapter_id": asset["chapter_id"],
             "order": order,
@@ -158,7 +193,7 @@ def build_plan(scored_assets_path: Path, cfg: Optional[PlanConfig] = None) -> di
         date_label = first_ts.split("T")[0] if "T" in first_ts else first_ts
         chapter_summaries.append({
             "chapter_id": chapter_id,
-            "title": f"Chapter {chapter_id + 1} · {date_label}",
+            "title": f"Chapter {chapter_id + 1} · {chapter_names.get(chapter_id, date_label)}",
             "shot_count": len(chapter_shots),
             "enabled_shot_count": sum(1 for s in chapter_shots if s["enabled"]),
         })
@@ -190,8 +225,9 @@ if __name__ == "__main__":
     parser.add_argument("scored_assets_json", type=Path)
     parser.add_argument("--out", type=Path, default=Path("plan.json"))
     parser.add_argument("--target-seconds", type=float, default=180.0)
+    parser.add_argument("--sort", choices=["date", "folder"], default="date")
     args = parser.parse_args()
 
-    cfg = PlanConfig(target_duration_seconds=args.target_seconds)
+    cfg = PlanConfig(target_duration_seconds=args.target_seconds, sort_mode=args.sort)
     out = write_plan(args.scored_assets_json, args.out, cfg)
     print(f"Wrote {out}")

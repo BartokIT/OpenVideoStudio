@@ -46,7 +46,7 @@ Expected result, Acceptance criteria, How to test.
 
 ### 3. [Docs] Translate README to a new language
 **Labels:** `good first issue`, `documentation`
-**Problem:** Only English (`README.md`) and Chinese (`README_CN.md`) exist at launch.
+**Problem:** Only English (`README.md`) exists.
 **Why it matters:** Broadens the contributor/user base; explicitly called out as a Track H opportunity.
 **Relevant files:** `README.md` (source), new `README_<LANG>.md`
 **Expected result:** A complete, accurate translation — not machine-translated without review — linked from the top of `README.md`'s language switcher.
@@ -128,7 +128,7 @@ Expected result, Acceptance criteria, How to test.
 15. **[Art Studio] IP-Adapter reference workflow** — `art-studio`, `comfyui`, `character-consistency`. Real identity-specialized reference conditioning (new node packages + model downloads required — document the tradeoff).
 16. **[Art Studio] Inpainting integration** — `art-studio`, `comfyui`.
 17. **[Art Studio] Asset lock/unlock** — `art-studio`. Mark a character/environment/prop "final" so later regeneration can't silently drift it.
-17b. **[Art Studio] Preset loader and UI selector** — `art-studio`, `ui`. Once good-first-issue 8's preset file format exists, nothing actually reads it — `studio/config.toml`'s `default_style` and `app.py`'s style textbox are still the only way to set style. Add a loader (new `studio/creative/presets.py`) plus a dropdown in `app.py`.
+17b. **[Art Studio] Preset loader and UI selector** — `art-studio`, `ui`. Once good-first-issue 8's preset file format exists, nothing actually reads it — `studio/config.toml`'s `default_style` and the Create workspace's style field are still the only way to set style. Add a loader (new `studio/creative/presets.py`) plus a selector in the Create workspace (`studio/web/js/create.js`).
 
 ### Model Gateway (Track B)
 18. **[Model Gateway] OpenAI-compatible provider** — `model-gateway`, `provider`. Generic `LLMProvider` against any OpenAI-compatible endpoint (`base_url`/`api_key`/`model`) — highest-value single addition, unlocks vLLM/LM Studio/most cloud APIs/most enterprise gateways at once.
@@ -154,7 +154,7 @@ Expected result, Acceptance criteria, How to test.
 30b. **[Platform] CPU / non-NVIDIA encoding fallback** — `help wanted`, `linux`, `macos`, `performance`. `studio/core/render.py` hardcodes `h264_nvenc` for final video encoding with no software/other-vendor-GPU fallback — blocks the entire pipeline's final step on any non-NVENC-capable machine, not just CPU-only ones. See `docs/HARDWARE.md`.
 
 ### Timeline / Editor (Track F)
-31. **[Timeline] Timeline UI** — `ui`, `video`. Gradio-based scene reorder/trim/transitions surface over the pipeline's existing resumability model.
+31. **[Timeline] Timeline for Create** — `ui`, `video`. The Remix workspace already has a timeline (`studio/ui/timeline.js`); reuse it for the AI clips (reorder/trim/transitions) over the pipeline's existing resumability model.
 32. **[Timeline] Subtitle editor UI** — `ui`.
 
 ### AI Video QC (Track G)

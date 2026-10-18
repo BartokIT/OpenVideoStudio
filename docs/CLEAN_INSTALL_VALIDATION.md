@@ -39,7 +39,7 @@ substitute for the fully clean-machine test still outstanding.
 | `.env` → `COMFYUI_ROOT` reaching the code | **PASS** | `ComfyClient().comfy_root` resolved to the configured value, read through the actual `providers._comfy_client` module, not reimplemented for the test |
 | Ollama connection | **PASS** | `OllamaProvider(...).is_available()` returned `True` against a live local server, through the actual provider class |
 | ComfyUI connection + model detection | **PASS** | `ComfyClient().is_available()` returned `True`; `/object_info` confirmed all three required checkpoints (SDXL, LTX-Video, T5XXL) visible under their exact expected filenames |
-| `app.py` import / UI construction | **PASS** | Full Gradio `Blocks` construction succeeds with no server launch; `_configured_ollama_model()` correctly read `config.toml` |
+| `app.py` import / UI construction | **PASS** | Full Gradio `Blocks` construction succeeds with no server launch; `_configured_ollama_model()` correctly read `config.toml` *(historical: the Gradio `app.py` was replaced by the editor, `python -m server`, on 2026-10-13; the equivalent check today is `tests/test_server.py` and `tests/test_create_service.py`)* |
 | Full test suite | **PASS** | 67/67, from the fresh venv, against the fresh copy |
 | Path-with-spaces handling | **PASS** | Re-ran the fresh copy from a directory path containing a space (`...ovs test with spaces\OpenVideoStudio`); 67/67 unaffected |
 | Shell-injection / quoting safety | **PASS** | Every `subprocess.run()` call in the codebase (audited directly, not sampled) passes a list of arguments; `shell=True` appears nowhere in the codebase — a spaced or unusual path cannot be misparsed as multiple shell tokens |

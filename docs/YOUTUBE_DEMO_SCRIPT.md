@@ -81,12 +81,12 @@ python -m pytest tests/ -q
 > is sound before I touch a real GPU. Now the real thing:"
 
 ```bash
-python app.py
+python -m server
 ```
 
 ## 2:30–3:15 — The prompt
 
-**On screen:** Gradio UI, AI Creation tab.
+**On screen:** the editor, Create workspace.
 
 **Say:**
 > "One prompt. I'm not cherry-picking a prompt I know works well — [type
