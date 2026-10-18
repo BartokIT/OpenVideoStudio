@@ -1,3 +1,4 @@
+# Modified in 2026 in the BartokIT/OpenVideoStudio fork - see NOTICE and CHANGELOG.md.
 """Stage 1: prompt -> concept + scene-by-scene script, via LLMProvider.
 
 New capability — no legacy equivalent. None of this codebase's earlier
@@ -34,6 +35,15 @@ target -> ~3 scenes). Never fewer than 2 scenes.
 - Output valid JSON only."""
 
 
+# ISO codes the editor stores -> names the LLM can't misread ("it" is also an English word)
+LANGUAGE_NAMES = {"en": "English", "it": "Italian", "es": "Spanish", "fr": "French", "de": "German",
+                  "pt": "Portuguese"}
+
+
+def language_name(code: str) -> str:
+    return LANGUAGE_NAMES.get(code, code)
+
+
 def generate_script(
     llm: LLMProvider, prompt: str, target_duration_seconds: float, style: str, language: str = "en"
 ) -> dict:
@@ -41,7 +51,7 @@ def generate_script(
         f"Prompt: {prompt}\n"
         f"Target duration: {target_duration_seconds:.0f} seconds\n"
         f"Style: {style}\n"
-        f"Language: {language}\n"
+        f"Language: {language_name(language)}\n"
     )
 
     last_error: Optional[str] = None

@@ -1,3 +1,4 @@
+# Modified in 2026 in the BartokIT/OpenVideoStudio fork - see NOTICE and CHANGELOG.md.
 """AI Creation orchestrator. Same RunState/resumability/logging shape as
 core/pipeline.py (Media Remix) — copied pattern, not shared code, per the
 architecture report.
@@ -95,9 +96,19 @@ class CreativeRunState:
     updated_at: str
     current_stage: Optional[str] = None
     storyboard_reviewed: bool = False
+    tts_engine: Optional[str] = None      # None: config.toml's [providers].tts
+    tts_voice: Optional[str] = None       # engine-specific voice id (None: the language's default)
     stages: dict = field(default_factory=lambda: {
         s: {"status": "pending", "timestamp": None, "error": None, "qc": None} for s in STAGES
     })
+
+
+def _voice_arg(voice: Optional[str]) -> Optional[str]:
+    """A "sample:<file>" voice is a recording in studio/voices/samples to clone."""
+    if voice and voice.startswith("sample:"):
+        p = Path(__file__).resolve().parents[1] / "voices" / "samples" / Path(voice[7:]).name
+        return str(p) if p.exists() else None
+    return voice
 
 
 def run_dir_for(runs_root: Path, run_id: str) -> Path:
@@ -111,7 +122,7 @@ def _now() -> str:
 def new_run(
     runs_root: Path, prompt: str, target_duration_seconds: float, style: str,
     aspect_ratio: str = "9:16", language: str = "en", llm_model: Optional[str] = None,
-    bgm_path: Optional[Path] = None,
+    bgm_path: Optional[Path] = None, tts_engine: Optional[str] = None, tts_voice: Optional[str] = None,
 ) -> CreativeRunState:
     llm_model = llm_model or _default_ollama_model()
     run_id = datetime.now().strftime("create_%Y%m%d_%H%M%S")
@@ -123,6 +134,7 @@ def new_run(
         run_id=run_id, prompt=prompt, target_duration_seconds=target_duration_seconds,
         style=style, aspect_ratio=aspect_ratio, language=language, llm_model=llm_model,
         bgm_path=str(bgm_path) if bgm_path else None, created_at=_now(), updated_at=_now(),
+        tts_engine=tts_engine, tts_voice=tts_voice,
     )
     save_run_state(rd, state)
     return state
@@ -361,8 +373,13 @@ def run_narration(run_dir: Path, state: CreativeRunState, force: bool = False) -
     save_run_state(run_dir, state)
     try:
         storyboard = json.loads((run_dir / "storyboard.json").read_text(encoding="utf-8"))
-        tts_provider = get_provider("tts", _provider_name("tts", "edge_tts"))
-        storyboard = generate_narration(tts_provider, storyboard, run_dir / "narration", state.language)
+        tts_provider = get_provider("tts", state.tts_engine or _provider_name("tts", "edge_tts"))
+        try:
+            storyboard = generate_narration(tts_provider, storyboard, run_dir / "narration", state.language,
+                                            voice=_voice_arg(state.tts_voice))
+        finally:
+            if hasattr(tts_provider, "close"):      # local engines: free the GPU now
+                tts_provider.close()
         (run_dir / "storyboard.json").write_text(json.dumps(storyboard, ensure_ascii=False, indent=2), encoding="utf-8")
 
         ok_count = sum(1 for s in storyboard["scenes"] if s.get("narration_path"))

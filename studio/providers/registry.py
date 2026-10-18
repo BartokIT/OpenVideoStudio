@@ -1,3 +1,4 @@
+# Modified in 2026 in the BartokIT/OpenVideoStudio fork - see NOTICE and CHANGELOG.md.
 """Provider registry — the one file that knows about concrete provider
 classes. creative/*.py only ever calls get_provider(); nothing else imports
 a concrete provider directly. Adding a new provider means writing one file
@@ -10,6 +11,7 @@ from providers.image.comfyui_sdxl import ComfyUISDXLProvider
 from providers.image.instantid_sdxl import InstantIDImageProvider
 from providers.video.comfyui_ltx import ComfyUILTXProvider
 from providers.tts.edge_tts_provider import EdgeTTSProvider
+from providers.tts.local_tts_provider import ChatterboxTTSProvider, KokoroTTSProvider
 from providers.identity_text import TextIdentityProvider
 from providers.identity_image import ImageReferenceIdentityProvider
 
@@ -28,6 +30,8 @@ PROVIDERS = {
     },
     "tts": {
         "edge_tts": EdgeTTSProvider,
+        "kokoro": KokoroTTSProvider,          # local, runs in studio/voices/env
+        "chatterbox": ChatterboxTTSProvider,  # local GPU, runs in studio/voices/env
     },
     "identity": {
         # Compatibility baseline. Reference-image, embedding, fine-tune, and

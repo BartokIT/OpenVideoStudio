@@ -25,6 +25,7 @@ for _p in (STUDIO_ROOT, STUDIO_ROOT / "core"):
 
 import create_service as create  # noqa: E402
 import studio_service as svc  # noqa: E402
+import voices  # noqa: E402
 
 from .jobs import JobManager  # noqa: E402
 
@@ -306,12 +307,14 @@ class NewCreation(BaseModel):
     style: str = ""
     language: str = "en"
     music_preset: Optional[str] = None
+    tts_engine: Optional[str] = None
+    tts_voice: Optional[str] = None
 
 
 @app.post("/api/create")
 def create_new(body: NewCreation):
     return _job("create-script", create.create, body.prompt, body.duration, body.aspect, body.style,
-                body.language, body.music_preset)
+                body.language, body.music_preset, tts_engine=body.tts_engine, tts_voice=body.tts_voice)
 
 
 @app.get("/api/create")
@@ -338,6 +341,65 @@ def create_scenes(run_id: str, body: Scenes):
     try:
         return create.update_scenes(run_id, body.scenes)
     except svc.ServiceError as e:
+        raise _err(e)
+
+
+class Voice(BaseModel):
+    engine: Optional[str] = None
+    voice: Optional[str] = None
+    language: Optional[str] = None
+
+
+@app.put("/api/create/{run_id}/voice")
+def create_voice(run_id: str, body: Voice):
+    try:
+        return create.set_voice(run_id, body.engine, body.voice)
+    except svc.ServiceError as e:
+        raise _err(e)
+
+
+# ----------------------------------------------------------------- voices
+
+def _voice_job(fn):
+    """Install/preview errors (pip, missing model, GPU) are shown as they are."""
+    def run(*args, **kwargs):
+        try:
+            return fn(*args, **kwargs)
+        except (RuntimeError, ValueError, OSError) as e:
+            raise svc.ServiceError(str(e)) from e
+    return run
+
+
+@app.get("/api/voices")
+def voices_catalog():
+    return voices.catalog()
+
+
+class VoiceEngine(BaseModel):
+    engine: str
+
+
+@app.post("/api/voices/install")
+def voices_install(body: VoiceEngine):
+    return _job("voice-install", _voice_job(voices.install), body.engine)
+
+
+def _preview(engine, language, voice, progress=None):
+    out = voices.preview(engine, language, voice, svc.RUNS_ROOT / "_voice_previews", progress)
+    return {"url": svc._versioned(out)}
+
+
+@app.post("/api/voices/preview")
+def voices_preview(body: Voice):
+    return _job("voice-preview", _voice_job(_preview), body.engine, body.language, body.voice)
+
+
+@app.post("/api/voices/samples")
+async def voices_sample(file: UploadFile = File(...)):
+    data = await file.read()
+    try:
+        return {"voice": voices.save_sample(file.filename or "voice.wav", data), "catalog": voices.catalog()}
+    except ValueError as e:
         raise _err(e)
 
 

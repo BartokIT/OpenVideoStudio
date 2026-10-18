@@ -1,3 +1,4 @@
+# Modified in 2026 in the BartokIT/OpenVideoStudio fork - see NOTICE and CHANGELOG.md.
 """Stage 2: script scenes -> per-scene image prompts, narration text, and
 durations, via LLMProvider. This is what the review gate reviews — nothing
 after this stage runs without explicit approval (enforced in
@@ -16,6 +17,7 @@ from typing import Optional
 
 from providers.base import LLMProvider
 from creative._json_utils import extract_json
+from creative.script import language_name
 from creative.validation import validate_storyboard, check_narrative_quality
 from creative.identity import generate_identities, format_character_identity, format_environment_identity
 
@@ -111,7 +113,7 @@ def generate_storyboard(llm: LLMProvider, script: dict, language: str = "en") ->
     user_prompt = (
         f"Title: {script.get('title', '')}\n"
         f"Theme: {script.get('theme', '')}\n"
-        f"Narration language: {language}\n\n"
+        f"Narration language: {language_name(language)}\n\n"
         f"{identity_context}"
         f"Scenes:\n{scenes_desc}"
     )

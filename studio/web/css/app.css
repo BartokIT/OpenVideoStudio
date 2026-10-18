@@ -362,3 +362,19 @@ input[type=range] { accent-color: var(--accent); height: 18px; margin: 0; }
   .tab span:not([data-icon]) { display: none; }
   .tab { font-size: 11px; }
 }
+
+/* Create → Voice */
+.engines { display: flex; flex-direction: column; gap: 6px; }
+.engine { display: flex; flex-direction: column; gap: 4px; padding: 8px 10px; border-radius: 8px; cursor: pointer;
+  border: 1px solid var(--line); background: var(--panel-2); }
+.engine:hover { border-color: var(--line-2); }
+.engine.on { border-color: var(--accent); box-shadow: inset 0 0 0 1px var(--accent); }
+.engine.na { opacity: .45; cursor: not-allowed; }
+.engine .ok { color: var(--green); }
+.voice-line { display: flex; align-items: center; gap: 6px; width: 100%; padding: 7px 9px; border-radius: 6px; cursor: pointer;
+  border: 1px solid var(--line); background: transparent; color: var(--text); font: inherit; font-size: 12.5px; text-align: left; }
+.voice-line:hover { border-color: var(--line-2); }
+.voice-line svg { width: 14px; height: 14px; flex: none; color: var(--text-3); }
+.voice-line .ellipsis { flex: 1; min-width: 0; }
+.voice-line .link { color: var(--accent-2); font-size: 11.5px; }
+.voice-run { display: flex; flex-direction: column; gap: 6px; padding: 10px; border-radius: 8px; border: 1px dashed var(--line-2); }

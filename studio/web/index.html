@@ -248,6 +248,8 @@
         <div class="hint" id="cAspectHint"></div>
         <label class="field">Style<input id="cStyle" placeholder="cinematic sci-fi" spellcheck="false"></label>
         <label class="field">Music<select id="cMusic"></select></label>
+        <label class="field">Narration</label>
+        <button class="voice-line" type="button" id="cVoiceLine" title="Engine, language and voice of the narration"></button>
         <button class="btn primary lg" id="cWrite"><span data-icon="sparkles"></span>Write script and storyboard</button>
         <div class="hint" id="cModel"></div>
       </section>
@@ -272,6 +274,7 @@
     <aside class="panel">
       <nav class="tabs" data-tabs="cright">
         <button class="tab active" data-tab="gen"><span data-icon="film"></span>Generate</button>
+        <button class="tab" data-tab="voice"><span data-icon="volume"></span>Voice</button>
       </nav>
       <section class="pane active" data-pane="gen">
         <div class="gen-gate" id="cGate">
@@ -285,6 +288,26 @@
           <video id="cVideo" controls playsinline></video>
           <div class="row between"><span class="small muted" id="cFinalWhen"></span>
             <button class="btn ghost sm" id="cOpenFolder"><span data-icon="folder"></span>Open folder</button></div>
+        </div>
+      </section>
+      <section class="pane voice-pane scroll" data-pane="voice">
+        <label class="field">Language<select id="vLanguage"></select></label>
+        <div class="hint">The script and the narration of new videos are written in this language.</div>
+        <label class="field">Engine</label>
+        <div class="engines" id="vEngines"></div>
+        <label class="field">Voice
+          <span class="row gap"><select id="vVoice" class="grow"></select>
+          <button class="btn sm" type="button" id="vPreview" title="Listen to this voice"><span data-icon="play"></span>Preview</button></span></label>
+        <div class="row gap" id="vSample" hidden>
+          <button class="btn xs" type="button" id="vSampleBtn"><span data-icon="upload"></span>Add my voice…</button>
+          <span class="small muted">10–20 s of clean speech (wav, mp3) to clone</span>
+          <input type="file" id="vSampleFile" accept=".wav,.mp3,.flac,.ogg,.m4a" hidden>
+        </div>
+        <div class="hint" id="vNote"></div>
+        <div class="voice-run" id="vRun" hidden>
+          <div class="small muted">This video</div>
+          <div class="strong" id="vRunNow"></div>
+          <button class="btn sm" type="button" id="vApply"><span data-icon="check"></span>Use the selected voice for this video</button>
         </div>
       </section>
     </aside>

@@ -3,6 +3,7 @@
 // final video. Nothing generates on the GPU before "Approve and generate".
 import { $, $$, h, icon, toast, fmtShort, debounce } from './dom.js';
 import { get, post, put } from './api.js';
+import { initVoice, choice as voiceChoice, setRun as setVoiceRun } from './voice.js';
 
 const C = { catalog: null, run: null, ctx: null, tracks: [], generating: false, pending: new Map() };
 const rid = () => C.run && C.run.run_id;
@@ -25,6 +26,8 @@ export async function initCreate(ctx) {
       showAspectHint();
     });
   }
+  C.ctx.showTab = showTab;
+  await initVoice(C.ctx, { onRun: (st) => { C.run = st; render(); } });
   $('#cWrite').addEventListener('click', write);
   $('#cGenerate').addEventListener('click', generate);
   $('#cOpenFolder').addEventListener('click', () => rid() && post(`/api/create/${rid()}/open-folder`).catch(() => {}));
@@ -81,7 +84,7 @@ async function refreshServices() {
 function summary() {
   if (!C.run) { C.ctx.setSummary('Create · describe a video to start'); $('#createTitle').textContent = 'New AI video'; $('#createLabel').textContent = ''; return; }
   const r = C.run;
-  C.ctx.setSummary(`Create · ${r.scenes.length} scenes · ${fmtShort(r.total)} · ${r.aspect}`);
+  C.ctx.setSummary(`Create · ${r.scenes.length} scenes · ${fmtShort(r.total)} · ${r.aspect} · ${r.language.toUpperCase()}`);
   $('#createTitle').textContent = r.title || r.prompt.slice(0, 60);
   $('#createLabel').textContent = r.run_id;
 }
@@ -94,7 +97,7 @@ async function write() {
   try {
     const id = await C.ctx.job(post('/api/create', {
       prompt, duration: parseFloat($('#cDuration').value) || 15, aspect: $('#cAspect .on')?.dataset.v || '9:16',
-      style: $('#cStyle').value, language: 'en', music_preset: $('#cMusic').value || null,
+      style: $('#cStyle').value, music_preset: $('#cMusic').value || null, ...voiceChoice(),
     }), 'Writing the script', { onProgress: () => {} });
     await load(id);
     toast('Storyboard ready. Review and edit the scenes, then approve.', 'ok');
@@ -117,7 +120,13 @@ function render() {
   $('#cWarnings').title = r.warnings.join('\n');
   renderScenes();
   renderStages(r);
+  setVoiceRun(r);
   summary();
+}
+
+function showTab(group, tab) {
+  const nav = document.querySelector(`.create-ws [data-tabs="${group}"]`);
+  nav?.querySelector(`.tab[data-tab="${tab}"]`)?.click();
 }
 
 function aspectRatio() {

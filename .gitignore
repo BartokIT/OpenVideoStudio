@@ -61,3 +61,6 @@ studio/assets/music/*.ogg
 studio/assets/music/*.flac
 demo_pro/
 _backup_pre_pro_*/
+
+# Local narration voices (PyTorch, Kokoro, Chatterbox, voice samples) — see core/voices.py
+studio/voices/
